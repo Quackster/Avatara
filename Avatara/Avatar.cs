@@ -1,4 +1,5 @@
 ﻿using Avatara.Figure;
+using Avatara.Util;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
@@ -88,10 +89,13 @@ namespace Avatara
                 }
 
                 var asset = LoadFigureAsset(parts, part, set);
+
+                if (asset == null)
+                    return;
             }
         }
 
-        private object LoadFigureAsset(string[] parts, FigurePart part, FigureSet set)
+        private AvatarAsset LoadFigureAsset(string[] parts, FigurePart part, FigureSet set)
         {
             var key = parts[0] + (IsSmall ? "_sh" : "_h");
             var document = FigureExtractor.Parts.ContainsKey(key) ? FigureExtractor.Parts[key] : null;
@@ -107,9 +111,25 @@ namespace Avatara
                 var asset = list.Item(i);
                 var name = asset.Attributes.GetNamedItem("name").InnerText;
 
-                if (name == assetName)
+                if (name != assetName)
+                    continue;
+
+                var offsetList = asset.ChildNodes;
+
+                for (int j = 0; j < offsetList.Count; j++)
                 {
-                    Console.WriteLine("test");
+                    var offsetData = offsetList.Item(j);
+
+                    if (offsetData.Attributes.GetNamedItem("key") == null || 
+                        offsetData.Attributes.GetNamedItem("value") == null)
+                        continue;
+
+                    if (offsetData.Attributes.GetNamedItem("key").InnerText != "offset")
+                        continue;
+
+                    var offsets = offsetData.Attributes.GetNamedItem("value").InnerText.Split(',');
+
+                    return new AvatarAsset(name, FileUtil.SolveFile("figuredata/" + document.FileName + "/", name), int.Parse(offsets[0]), int.Parse(offsets[1]));
                 }
             }
 
