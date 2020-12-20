@@ -21,10 +21,10 @@ namespace AvataraApp
                 figuredataReader.loadFigureSetTypes();
                 figuredataReader.LoadFigureSets();
 
-                string figure = "lg-696-95.ea-1406-.hr-890-31.fa-1204-.hd-625-2.ch-660-93.he-1601-.ca-1813-";
+                string figure = "ha-1012-110.he-1609-62.hr-678-58.sh-906-64.ca-1807-62.wa-2005-62.lg-280-109.hd-180-1.ch-805-109";
                 Console.WriteLine("Parsing: " + figure);
 
-                var avatar = new Avatar(figure, false, 2, 2, figuredataReader);
+                var avatar = new Avatar(figure, false, 2, 2, figuredataReader, "std");
                 avatar.Run();
 
                 Console.WriteLine("Done");

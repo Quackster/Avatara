@@ -112,8 +112,6 @@ namespace Avatara
                 if (Parts.ContainsKey(name.Split("_")[2] + (fileName.Contains("_50_") ? "_sh" : "_h")))
                     continue;
 
-                Console.WriteLine("Figure: " + name.Split("_")[2] + " / " + fileName);
-
                 Parts.Add(name.Split("_")[2] + (fileName.Contains("_50_") ? "_sh" : "_h"), new FigureDocument(fileName, xmlFile));
             }
         }

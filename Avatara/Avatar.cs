@@ -28,7 +28,7 @@ namespace Avatara
         public int CANVAS_WIDTH = 500;
         public int CANVAS_HEIGHT = 500;
 
-        public Avatar(string figure, bool isSmall, int bodyDirection, int headDirection, FiguredataReader figuredataReader)
+        public Avatar(string figure, bool isSmall, int bodyDirection, int headDirection, FiguredataReader figuredataReader, string action = "std")
         {
             Figure = figure;
             IsSmall = isSmall;
@@ -36,6 +36,7 @@ namespace Avatara
             HeadDirection = headDirection;
             FiguredataReader = figuredataReader;
             DrawingCanvas = new Image<Rgba32>(CANVAS_HEIGHT, CANVAS_WIDTH, HexToColor("transparent"));
+            Action = action;
         }
 
         public void Run()
@@ -56,6 +57,9 @@ namespace Avatara
                 foreach (var asset in buildQueue)
                 {
                     var image = SixLabors.ImageSharp.Image.Load<Rgba32>(asset.FileName);
+
+                    if (buildQueue.Count(x => x.Set.HiddenLayers.Contains(asset.Part.Type)) > 0)
+                        continue;
 
                     if (asset.Part.Type != "ey")
                     {
@@ -84,12 +88,10 @@ namespace Avatara
                             }
                         }
                     }
-
-                    if (asset.Part.Type == "ey")
+                    else
                     {
                         TintImage(image, "FFFFFF", 255);
                     }
-
 
                     var graphicsOptions = new GraphicsOptions();
                     graphicsOptions.ColorBlendingMode = PixelColorBlendingMode.Normal;
@@ -147,13 +149,6 @@ namespace Avatara
 
             }
 
-                if (figureData.ContainsKey("hr") && figureData.ContainsKey("ha"))
-            {
-                figureData.Remove("hr");
-
-            }
-
-
             foreach (string data in figureData.Values)
             {
                 string[] parts = data.Split("-");
@@ -194,7 +189,16 @@ namespace Avatara
             if (document == null)
                 return null;
 
-            string assetName = (this.IsSmall ? "sh" : "h") + "_" + Action + "_" + part.Type  + "_" + part.Id + "_" + BodyDirection + "_" + Frame;
+            var asset = LocateAsset((this.IsSmall ? "sh" : "h") + "_" + Action + "_" + part.Type + "_" + part.Id + "_" + BodyDirection + "_" + Frame, document, parts, part, set);
+
+            if (asset == null)
+                asset = LocateAsset((this.IsSmall ? "sh" : "h") + "_" + "std" + "_" + part.Type + "_" + part.Id + "_" + BodyDirection + "_" + Frame, document, parts, part, set); 
+
+            return asset;
+        }
+
+        private AvatarAsset LocateAsset(string assetName, FigureDocument document, string[] parts, FigurePart part, FigureSet set)
+        {
             var list = document.XmlFile.SelectNodes("//manifest/library/assets/asset");
 
             for (int i = 0; i < list.Count; i++)
@@ -211,7 +215,7 @@ namespace Avatara
                 {
                     var offsetData = offsetList.Item(j);
 
-                    if (offsetData.Attributes.GetNamedItem("key") == null || 
+                    if (offsetData.Attributes.GetNamedItem("key") == null ||
                         offsetData.Attributes.GetNamedItem("value") == null)
                         continue;
 

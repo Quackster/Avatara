@@ -5,6 +5,7 @@ namespace Avatara.Figure
     public class FigureSet
     {
         public List<FigurePart> FigureParts;
+        public List<string> HiddenLayers;
         public string SetType;
         public string Id;
         public string Gender;
@@ -21,6 +22,7 @@ namespace Avatara.Figure
             this.Colourable = colourable;
             this.Selectable = selectable;
             this.FigureParts = new List<FigurePart>();
+            this.HiddenLayers = new List<string>();
         }
     }
 }

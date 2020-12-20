@@ -55,6 +55,25 @@ namespace Avatara.Figure
                             int.Parse(part.Attributes.GetNamedItem("index").InnerText)));
                 }
 
+
+                for (int j = 0; j < partList.Count; j++)
+                {
+                    var part = partList.Item(j);//.getChildNodes();
+
+                    if (part.Name != "hiddenlayers")
+                    {
+                        continue;
+                    }
+
+                    var hiddenLayerList = part.ChildNodes;
+
+                    for (int k = 0; k < hiddenLayerList.Count; k++) {
+
+                        var hiddenLayer = hiddenLayerList.Item(k);
+                        figureSet.HiddenLayers.Add(hiddenLayer.Attributes.GetNamedItem("parttype").InnerText);
+                    }
+                }
+
                 this.FigureSets.Add(id, figureSet);
             }
         }
