@@ -1,9 +1,12 @@
-﻿using Avatara.Figure;
+﻿using Avatara.Extensions;
+using Avatara.Figure;
 using Avatara.Util;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -64,35 +67,70 @@ namespace Avatara
                 sets.Add(parts[0]);
             }
 
-
-            foreach (string data in figureData)
+            using (var canvas = this.DrawingCanvas)
             {
-                string[] parts = data.Split("-");
 
-                if (parts.Length < 2 || parts.Length > 3)
+                foreach (string data in figureData)
                 {
-                    return;
+                    string[] parts = data.Split("-");
+
+                    if (parts.Length < 2 || parts.Length > 3)
+                    {
+                        return;
+                    }
+
+                    var set = FiguredataReader.FigureSets.Values.FirstOrDefault(x => x.Id == parts[1]);
+
+                    if (set == null)
+                    {
+                        return;
+                    }
+
+                    var part = set.FigureParts.FirstOrDefault(x => x.Type == parts[0]);
+
+                    if (part == null)
+                    {
+                        return;
+                    }
+
+                    var asset = LoadFigureAsset(parts, part, set);
+
+                    if (asset == null)
+                        return;
+
+                    var graphicsOptions = new GraphicsOptions();
+                    graphicsOptions.ColorBlendingMode = PixelColorBlendingMode.Normal;
+
+                    /*
+                    if ((asset.Ink == "ADD" || asset.Ink == "33"))
+                    {
+                        graphicsOptions.ColorBlendingMode = PixelColorBlendingMode.Add;
+                    }
+                    else
+                    {
+                        graphicsOptions.ColorBlendingMode = PixelColorBlendingMode.Normal;
+                    }
+                    */
+
+                    var image = SixLabors.ImageSharp.Image.Load<Rgba32>(asset.FileName);
+
+
+                    canvas.Mutate(ctx =>
+                    {
+                        ctx.DrawImage(image, new SixLabors.ImageSharp.Point(canvas.Width - asset.ImageX, canvas.Height - asset.ImageY), graphicsOptions);
+                    });
                 }
 
-                var set = FiguredataReader.FigureSets.Values.FirstOrDefault(x => x.Id == parts[1]);
-                
-                if (set == null)
+                using (Bitmap tempBitmap = canvas.ToBitmap())
                 {
-                    return;
+                    // Crop the image
+                    using (Bitmap croppedBitmap = ImageUtil.TrimBitmap(tempBitmap, HexToColor("transparent")))
+                    {
+                        croppedBitmap.Save("temp.png");
+                    }
                 }
-
-                var part = set.FigureParts.FirstOrDefault(x => x.Type == parts[0]);
-
-                if (part == null)
-                {
-                    return;
-                }
-
-                var asset = LoadFigureAsset(parts, part, set);
-
-                if (asset == null)
-                    return;
             }
+
         }
 
         private AvatarAsset LoadFigureAsset(string[] parts, FigurePart part, FigureSet set)
@@ -129,7 +167,7 @@ namespace Avatara
 
                     var offsets = offsetData.Attributes.GetNamedItem("value").InnerText.Split(',');
 
-                    return new AvatarAsset(name, FileUtil.SolveFile("figuredata/" + document.FileName + "/", name), int.Parse(offsets[0]), int.Parse(offsets[1]));
+                    return new AvatarAsset(name, FileUtil.SolveFile("figuredata/" + document.FileName + "/", name), int.Parse(offsets[0]), int.Parse(offsets[1]), CANVAS_WIDTH, CANVAS_HEIGHT);
                 }
             }
 
@@ -214,19 +252,19 @@ namespace Avatara
         {
             if (hexString.ToLower() == "transparent")
             {
-                return Color.Transparent;
+                return SixLabors.ImageSharp.Color.Transparent;
             }
 
             try
             {
                 var drawingColor = System.Drawing.ColorTranslator.FromHtml("#" + hexString);
-                return Color.FromRgb(drawingColor.R, drawingColor.G, drawingColor.B);
+                return SixLabors.ImageSharp.Color.FromRgb(drawingColor.R, drawingColor.G, drawingColor.B);
             }
             catch (Exception ex)
             {
             }
 
-            return Color.FromRgb(254, 254, 254);
+            return SixLabors.ImageSharp.Color.FromRgb(254, 254, 254);
         }
 
 
