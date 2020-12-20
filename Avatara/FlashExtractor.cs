@@ -22,7 +22,7 @@ namespace Avatara
                 Parts = new Dictionary<string, FigureDocument>();
 
 
-            if (Parts.Count == 0)
+            if (Parts.Count == 0 && Directory.GetDirectories("figuredata/compiled").Length > 1)
             {
                 foreach (var file in Directory.GetFiles("figuredata/compiled"))
                 {
@@ -41,10 +41,6 @@ namespace Avatara
 
                 if (!Directory.Exists(@"figuredata/" + fileName))
                     Directory.CreateDirectory(@"figuredata/" + fileName);
-                else
-                    return;
-
-                ParseXML(fileName, file);
 
                 var flash = new ShockwaveFlash(file);
                 flash.Disassemble();
@@ -89,6 +85,8 @@ namespace Avatara
 
                     WriteImage(image, @"figuredata/" + fileName + "/" + xmlName + ".png");
                 }
+
+                ParseXML(fileName, file);
             }
         }
 

@@ -25,12 +25,12 @@ namespace AvataraWebApp.Controllers
         {
             if (figuredataReader == null)
             {
+                FigureExtractor.Parse();
+
                 figuredataReader = new FiguredataReader();
                 figuredataReader.LoadFigurePalettes();
                 figuredataReader.loadFigureSetTypes();
                 figuredataReader.LoadFigureSets();
-
-                FigureExtractor.Parse();
             }
 
             bool isSmall = false;
