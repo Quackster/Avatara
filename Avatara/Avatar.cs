@@ -25,8 +25,8 @@ namespace Avatara
 
         public Image<Rgba32> DrawingCanvas;
 
-        public int CANVAS_WIDTH = 500;
-        public int CANVAS_HEIGHT = 500;
+        public int CANVAS_WIDTH = 110;
+        public int CANVAS_HEIGHT = 64;
 
         public Avatar(string figure, bool isSmall, int bodyDirection, int headDirection, FiguredataReader figuredataReader, string action = "std")
         {
@@ -35,6 +35,13 @@ namespace Avatara
             BodyDirection = bodyDirection;
             HeadDirection = headDirection;
             FiguredataReader = figuredataReader;
+
+            if (isSmall)
+            {
+                CANVAS_HEIGHT = CANVAS_HEIGHT / 2;
+                CANVAS_WIDTH = CANVAS_WIDTH / 2;
+            }
+
             DrawingCanvas = new Image<Rgba32>(CANVAS_HEIGHT, CANVAS_WIDTH, HexToColor("transparent"));
             Action = action;
         }
@@ -96,18 +103,29 @@ namespace Avatara
                     var graphicsOptions = new GraphicsOptions();
                     graphicsOptions.ColorBlendingMode = PixelColorBlendingMode.Normal;
 
+                    try
+                    {
+                        canvas.Mutate(ctx =>
+                        {
+                            ctx.DrawImage(image, new SixLabors.ImageSharp.Point(canvas.Width - asset.ImageX, canvas.Height - asset.ImageY), graphicsOptions);
+                        });
+                    } catch { }
+                }
+
+                if (BodyDirection == 4)
+                {
                     canvas.Mutate(ctx =>
                     {
-                        ctx.DrawImage(image, new SixLabors.ImageSharp.Point(canvas.Width - asset.ImageX, canvas.Height - asset.ImageY), graphicsOptions);
+                        ctx.Flip(FlipMode.Horizontal);
                     });
                 }
 
                 using (Bitmap tempBitmap = canvas.ToBitmap())
                 {
                     // Crop the image
-                    using (Bitmap croppedBitmap = ImageUtil.TrimBitmap(tempBitmap, HexToColor("transparent")))
+                    //using (Bitmap croppedBitmap = //ImageUtil.TrimBitmap(tempBitmap, HexToColor("transparent")))
                     {
-                        return RenderImage(croppedBitmap);
+                        return RenderImage(tempBitmap);
                     }
                 }
             }
@@ -195,10 +213,21 @@ namespace Avatara
             if (document == null)
                 return null;
 
-            var asset = LocateAsset((this.IsSmall ? "sh" : "h") + "_" + Action + "_" + part.Type + "_" + part.Id + "_" + BodyDirection + "_" + Frame, document, parts, part, set);
+            int direction = BodyDirection;
+
+            if (BodyDirection == 4)
+                direction = 2;
+
+            var asset = LocateAsset((this.IsSmall ? "sh" : "h") + "_" + Action + "_" + part.Type + "_" + part.Id + "_" + direction + "_" + Frame, document, parts, part, set);
 
             if (asset == null)
-                asset = LocateAsset((this.IsSmall ? "sh" : "h") + "_" + "std" + "_" + part.Type + "_" + part.Id + "_" + BodyDirection + "_" + Frame, document, parts, part, set); 
+                asset = LocateAsset((this.IsSmall ? "sh" : "h") + "_" + "std" + "_" + part.Type + "_" + part.Id + "_" + direction + "_" + Frame, document, parts, part, set);
+
+            if (IsSmall)
+            {
+                if (asset == null)
+                    asset = LocateAsset((this.IsSmall ? "sh" : "h") + "_" + "std" + "_" + part.Type + "_" + 1 + "_" + direction + "_" + Frame, document, parts, part, set);
+            }
 
             return asset;
         }
@@ -211,6 +240,11 @@ namespace Avatara
             {
                 var asset = list.Item(i);
                 var name = asset.Attributes.GetNamedItem("name").InnerText;
+
+                if (parts[0] == "hd")
+                {
+                    Console.WriteLine(parts[0]);
+                }
 
                 if (name != assetName)
                     continue;
@@ -230,7 +264,7 @@ namespace Avatara
 
                     var offsets = offsetData.Attributes.GetNamedItem("value").InnerText.Split(',');
 
-                    return new AvatarAsset(name, FileUtil.SolveFile("figuredata/" + document.FileName + "/", name), int.Parse(offsets[0]), int.Parse(offsets[1]), part, set, CANVAS_WIDTH, CANVAS_HEIGHT, parts);
+                    return new AvatarAsset(this.IsSmall, name, FileUtil.SolveFile("figuredata/" + document.FileName + "/", name), int.Parse(offsets[0]), int.Parse(offsets[1]), part, set, CANVAS_WIDTH, CANVAS_HEIGHT, parts);
                 }
             }
 
@@ -323,7 +357,7 @@ namespace Avatara
                 var drawingColor = System.Drawing.ColorTranslator.FromHtml("#" + hexString);
                 return SixLabors.ImageSharp.Color.FromRgb(drawingColor.R, drawingColor.G, drawingColor.B);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
             }
 

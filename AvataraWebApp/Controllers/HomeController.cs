@@ -43,21 +43,11 @@ namespace AvataraWebApp.Controllers
                 figure = value.ToString();
             }
 
-            if (Request.Query.ContainsKey("s"))
+            if (Request.Query.ContainsKey("size"))
             {
-                Request.Query.TryGetValue("s", out var value);
+                Request.Query.TryGetValue("size", out var value);
 
-                if (value == "1" || value == "true")
-                {
-                    isSmall = true;
-                }
-            }
-
-            if (Request.Query.ContainsKey("small"))
-            {
-                Request.Query.TryGetValue("small", out var value);
-
-                if (value == "1" || value == "true")
+                if (value == "s")
                 {
                     isSmall = true;
                 }
