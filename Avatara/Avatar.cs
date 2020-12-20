@@ -115,6 +115,7 @@ namespace Avatara
 
         private byte[] RenderImage(Bitmap croppedBitmap)
         {
+            return croppedBitmap.ToByteArray();
         }
 
 
