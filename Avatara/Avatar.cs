@@ -41,79 +41,24 @@ namespace Avatara
         public void Run()
         {
             bool isValid = ValidateFigure();
-            DrawFigure();
+            var buildQueue = BuildDrawQueue();
+
+            if (buildQueue == null)
+                return;
+
+            DrawImage(buildQueue);
         }
 
-        private void DrawFigure()
+        private void DrawImage(List<AvatarAsset> buildQueue)
         {
-            List<string> sets = new List<string>();
-            String[] figureData = Figure.Split(".");
-
-            if (figureData.Length == 0)
-            {
-                return;
-            }
-
-
-            foreach (string data in figureData)
-            {
-                String[] parts = data.Split("-");
-
-                if (parts.Length < 2 || parts.Length > 3)
-                {
-                    return;
-                }
-
-                sets.Add(parts[0]);
-            }
-
             using (var canvas = this.DrawingCanvas)
             {
-
-                foreach (string data in figureData)
+                foreach (var asset in buildQueue)
                 {
-                    string[] parts = data.Split("-");
-
-                    if (parts.Length < 2 || parts.Length > 3)
-                    {
-                        return;
-                    }
-
-                    var set = FiguredataReader.FigureSets.Values.FirstOrDefault(x => x.Id == parts[1]);
-
-                    if (set == null)
-                    {
-                        return;
-                    }
-
-                    var part = set.FigureParts.FirstOrDefault(x => x.Type == parts[0]);
-
-                    if (part == null)
-                    {
-                        return;
-                    }
-
-                    var asset = LoadFigureAsset(parts, part, set);
-
-                    if (asset == null)
-                        return;
+                    var image = SixLabors.ImageSharp.Image.Load<Rgba32>(asset.FileName);
 
                     var graphicsOptions = new GraphicsOptions();
                     graphicsOptions.ColorBlendingMode = PixelColorBlendingMode.Normal;
-
-                    /*
-                    if ((asset.Ink == "ADD" || asset.Ink == "33"))
-                    {
-                        graphicsOptions.ColorBlendingMode = PixelColorBlendingMode.Add;
-                    }
-                    else
-                    {
-                        graphicsOptions.ColorBlendingMode = PixelColorBlendingMode.Normal;
-                    }
-                    */
-
-                    var image = SixLabors.ImageSharp.Image.Load<Rgba32>(asset.FileName);
-
 
                     canvas.Mutate(ctx =>
                     {
@@ -130,7 +75,63 @@ namespace Avatara
                     }
                 }
             }
+        }
 
+        private List<AvatarAsset> BuildDrawQueue()
+        {
+            List<AvatarAsset> queue = new List<AvatarAsset>();
+
+            List<string> sets = new List<string>();
+            String[] figureData = Figure.Split(".");
+
+            if (figureData.Length == 0)
+            {
+                return null;
+            }
+
+
+            foreach (string data in figureData)
+            {
+                String[] parts = data.Split("-");
+
+                if (parts.Length < 2 || parts.Length > 3)
+                {
+                    return null;
+                }
+
+                sets.Add(parts[0]);
+            }
+
+            foreach (string data in figureData)
+            {
+                string[] parts = data.Split("-");
+
+                if (parts.Length < 2 || parts.Length > 3)
+                {
+                    return null;
+                }
+
+                var setList = FiguredataReader.FigureSets.Values.Where(x => x.Id == parts[1]);
+
+                foreach (var set in setList)
+                {
+                    var partList = set.FigureParts;
+
+                    foreach (var part in partList)
+                    {
+                        var t = LoadFigureAsset(parts, part, set);
+
+                        if (t == null)
+                            continue;
+
+                        queue.Add(t);
+
+                    }
+                }
+            }
+
+            queue = queue.OrderBy(x => x.Part.OrderId).ToList();
+            return queue;
         }
 
         private AvatarAsset LoadFigureAsset(string[] parts, FigurePart part, FigureSet set)
@@ -167,7 +168,7 @@ namespace Avatara
 
                     var offsets = offsetData.Attributes.GetNamedItem("value").InnerText.Split(',');
 
-                    return new AvatarAsset(name, FileUtil.SolveFile("figuredata/" + document.FileName + "/", name), int.Parse(offsets[0]), int.Parse(offsets[1]), CANVAS_WIDTH, CANVAS_HEIGHT);
+                    return new AvatarAsset(name, FileUtil.SolveFile("figuredata/" + document.FileName + "/", name), int.Parse(offsets[0]), int.Parse(offsets[1]), part, set, CANVAS_WIDTH, CANVAS_HEIGHT);
                 }
             }
 

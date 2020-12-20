@@ -1,4 +1,6 @@
-﻿namespace Avatara
+﻿using Avatara.Figure;
+
+namespace Avatara
 {
     internal class AvatarAsset
     {
@@ -8,17 +10,20 @@
         public int ImageX;
         public int ImageY;
         public string FileName;
+        public FigurePart Part;
+        public FigureSet Set;
 
-        public AvatarAsset(string name, string fileName, int X, int Y, int canvasW, int canvasH)
+        public AvatarAsset(string name, string fileName, int X, int Y, FigurePart part, FigureSet set, int canvasW, int canvasH)
         {
             this.Name = name;
             this.X = X;
             this.Y = Y;
             this.FileName = fileName;
-
-
-            ImageX = X + (canvasW / 2);// 32;
-            ImageY = Y + (canvasH / 2);// 25;
+            this.ImageX = X + (canvasW / 2);
+            this.ImageY = Y + (canvasH / 2);
+            this.Part = part;
+            this.Set = set;
         }
+
     }
 }
