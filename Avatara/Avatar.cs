@@ -39,18 +39,18 @@ namespace Avatara
             Action = action;
         }
 
-        public void Run()
+        public byte[] Run()
         {
             bool isValid = ValidateFigure();
             var buildQueue = BuildDrawQueue();
 
             if (buildQueue == null)
-                return;
+                return null;
 
-            DrawImage(buildQueue);
+            return DrawImage(buildQueue);
         }
 
-        private void DrawImage(List<AvatarAsset> buildQueue)
+        private byte[] DrawImage(List<AvatarAsset> buildQueue)
         {
             using (var canvas = this.DrawingCanvas)
             {
@@ -107,11 +107,16 @@ namespace Avatara
                     // Crop the image
                     using (Bitmap croppedBitmap = ImageUtil.TrimBitmap(tempBitmap, HexToColor("transparent")))
                     {
-                        croppedBitmap.Save("temp.png");
+                        return RenderImage(croppedBitmap);
                     }
                 }
             }
         }
+
+        private byte[] RenderImage(Bitmap croppedBitmap)
+        {
+        }
+
 
         private void TintImage(Image<Rgba32> image, string colourCode, byte alpha)
         {
