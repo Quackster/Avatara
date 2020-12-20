@@ -112,7 +112,7 @@ namespace Avatara
                     } catch { }
                 }
 
-                if (BodyDirection == 4)
+                if (BodyDirection == 4 || BodyDirection == 6)
                 {
                     canvas.Mutate(ctx =>
                     {
@@ -218,6 +218,9 @@ namespace Avatara
             if (BodyDirection == 4)
                 direction = 2;
 
+            if (BodyDirection == 6)
+                direction = 0;
+
             var asset = LocateAsset((this.IsSmall ? "sh" : "h") + "_" + Action + "_" + part.Type + "_" + part.Id + "_" + direction + "_" + Frame, document, parts, part, set);
 
             if (asset == null)
@@ -240,11 +243,6 @@ namespace Avatara
             {
                 var asset = list.Item(i);
                 var name = asset.Attributes.GetNamedItem("name").InnerText;
-
-                if (parts[0] == "hd")
-                {
-                    Console.WriteLine(parts[0]);
-                }
 
                 if (name != assetName)
                     continue;
