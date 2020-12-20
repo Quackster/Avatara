@@ -3,6 +3,7 @@ using Flazzy;
 using Flazzy.Tags;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -13,8 +14,23 @@ namespace Avatara
 {
     public class FigureExtractor
     {
+        public static Dictionary<string, FigureDocument> Parts;
+
         public static void Parse()
         {
+            if (Parts == null)
+                Parts = new Dictionary<string, FigureDocument>();
+
+
+            if (Parts.Count == 0)
+            {
+                foreach (var file in Directory.GetFiles("figuredata/compiled"))
+                {
+                    string fileName = Path.GetFileNameWithoutExtension(file);
+                    ParseXML(fileName, file);
+                }
+            }
+
             foreach (var file in Directory.GetFiles("figuredata/compiled"))
             {
                 string fileName = Path.GetFileNameWithoutExtension(file);
@@ -22,10 +38,13 @@ namespace Avatara
                 //if (Directory.Exists(@"furni_export\" + fileName))
                 //    return false;
 
+
                 if (!Directory.Exists(@"figuredata/" + fileName))
                     Directory.CreateDirectory(@"figuredata/" + fileName);
                 else
                     return;
+
+                ParseXML(fileName, file);
 
                 var flash = new ShockwaveFlash(file);
                 flash.Disassemble();
@@ -70,6 +89,30 @@ namespace Avatara
 
                     WriteImage(image, @"figuredata/" + fileName + "/" + xmlName + ".png");
                 }
+            }
+        }
+
+        private static void ParseXML(string fileName, string file)
+        {
+            var xmlFile = FileUtil.SolveXmlFile("figuredata/" + fileName + "/xml/", "manifest");
+            var list = xmlFile.SelectNodes("//manifest/library/assets/asset");
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                var asset = list.Item(i);
+
+                if (asset.Attributes.GetNamedItem("name") == null)
+                    continue;
+
+                var name = asset.Attributes.GetNamedItem("name").InnerText;
+
+                if (name.Split("_").Length < 6)
+                    continue;
+
+                if (Parts.ContainsKey(name.Split("_")[2] + (fileName.Contains("_50_") ? "_sh" : "_h")))
+                    continue;
+
+                Parts.Add(name.Split("_")[2] + (fileName.Contains("_50_") ? "_sh" : "_h"), new FigureDocument(fileName, xmlFile));
             }
         }
 
