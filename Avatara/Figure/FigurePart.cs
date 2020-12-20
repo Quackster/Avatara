@@ -49,7 +49,7 @@ namespace Avatara.Figure
                     return 29;
                     break;
                 case "he":
-                    return 20;
+                    return 29;//20;
                     break;
                 case "cc":
                     return 21;

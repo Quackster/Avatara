@@ -81,7 +81,7 @@ namespace Avatara.Figure
                     bool isClubRequired = colour.Attributes.GetNamedItem("club").InnerText == "1";
                     bool isSelectable = colour.Attributes.GetNamedItem("selectable").InnerText == "1";
 
-                    this.FigurePalettes[paletteId].Add(new FigureColor(colourId, index, isClubRequired, isSelectable));
+                    this.FigurePalettes[paletteId].Add(new FigureColor(colourId, index, isClubRequired, isSelectable, colour.InnerText));
                 }
             }
         }

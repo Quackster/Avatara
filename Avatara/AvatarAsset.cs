@@ -12,8 +12,9 @@ namespace Avatara
         public string FileName;
         public FigurePart Part;
         public FigureSet Set;
+        public string[] Parts;
 
-        public AvatarAsset(string name, string fileName, int X, int Y, FigurePart part, FigureSet set, int canvasW, int canvasH)
+        public AvatarAsset(string name, string fileName, int X, int Y, FigurePart part, FigureSet set, int canvasW, int canvasH, string[] parts)
         {
             this.Name = name;
             this.X = X;
@@ -23,6 +24,7 @@ namespace Avatara
             this.ImageY = Y + (canvasH / 2);
             this.Part = part;
             this.Set = set;
+            this.Parts = parts;
         }
 
     }

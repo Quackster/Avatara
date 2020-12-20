@@ -57,6 +57,40 @@ namespace Avatara
                 {
                     var image = SixLabors.ImageSharp.Image.Load<Rgba32>(asset.FileName);
 
+                    if (asset.Part.Type != "ey")
+                    {
+                        if (asset.Part.Colorable)
+                        {
+                            string[] parts = asset.Parts;
+
+                            if (parts.Length > 2)
+                            {
+                                var paletteId = int.Parse(parts[2]);
+
+                                if (!FiguredataReader.FigureSetTypes.ContainsKey(parts[0]))
+                                    continue;
+
+                                var figureTypeSet = FiguredataReader.FigureSetTypes[parts[0]];
+                                var palette = FiguredataReader.FigurePalettes[figureTypeSet.PaletteId];
+                                var colourData = palette.FirstOrDefault(x => x.ColourId == parts[2]);
+
+                                if (colourData == null)
+                                {
+                                    continue;
+                                }
+
+                                TintImage(image, colourData.HexColor, 255);
+
+                            }
+                        }
+                    }
+
+                    if (asset.Part.Type == "ey")
+                    {
+                        TintImage(image, "FFFFFF", 255);
+                    }
+
+
                     var graphicsOptions = new GraphicsOptions();
                     graphicsOptions.ColorBlendingMode = PixelColorBlendingMode.Normal;
 
@@ -77,32 +111,50 @@ namespace Avatara
             }
         }
 
+        private void TintImage(Image<Rgba32> image, string colourCode, byte alpha)
+        {
+            var rgb = HexToColor(colourCode);
+
+            for (int x = 0; x < image.Width; x++)
+            {
+                for (int y = 0; y < image.Height; y++)
+                {
+                    var current = image[x, y];
+
+                    if (current.A > 0)
+                    {
+                        current.R = (byte)(rgb.R * current.R / 255);
+                        current.G = (byte)(rgb.G * current.G / 255);
+                        current.B = (byte)(rgb.B * current.B / 255);
+                        current.A = alpha;
+                    }
+
+                    image[x, y] = current;
+                }
+            }
+        }
+
         private List<AvatarAsset> BuildDrawQueue()
         {
             List<AvatarAsset> queue = new List<AvatarAsset>();
+            Dictionary<string, string> figureData = new Dictionary<string, string>();
 
-            List<string> sets = new List<string>();
-            String[] figureData = Figure.Split(".");
 
-            if (figureData.Length == 0)
+            foreach (string data in Figure.Split("."))
             {
-                return null;
+                string[] parts = data.Split("-");
+                figureData.Add(parts[0], string.Join("-", parts));
+
+            }
+
+                if (figureData.ContainsKey("hr") && figureData.ContainsKey("ha"))
+            {
+                figureData.Remove("hr");
+
             }
 
 
-            foreach (string data in figureData)
-            {
-                String[] parts = data.Split("-");
-
-                if (parts.Length < 2 || parts.Length > 3)
-                {
-                    return null;
-                }
-
-                sets.Add(parts[0]);
-            }
-
-            foreach (string data in figureData)
+            foreach (string data in figureData.Values)
             {
                 string[] parts = data.Split("-");
 
@@ -136,7 +188,7 @@ namespace Avatara
 
         private AvatarAsset LoadFigureAsset(string[] parts, FigurePart part, FigureSet set)
         {
-            var key = parts[0] + (IsSmall ? "_sh" : "_h");
+            var key = part.Type + (IsSmall ? "_sh" : "_h");
             var document = FigureExtractor.Parts.ContainsKey(key) ? FigureExtractor.Parts[key] : null;
 
             if (document == null)
@@ -168,7 +220,7 @@ namespace Avatara
 
                     var offsets = offsetData.Attributes.GetNamedItem("value").InnerText.Split(',');
 
-                    return new AvatarAsset(name, FileUtil.SolveFile("figuredata/" + document.FileName + "/", name), int.Parse(offsets[0]), int.Parse(offsets[1]), part, set, CANVAS_WIDTH, CANVAS_HEIGHT);
+                    return new AvatarAsset(name, FileUtil.SolveFile("figuredata/" + document.FileName + "/", name), int.Parse(offsets[0]), int.Parse(offsets[1]), part, set, CANVAS_WIDTH, CANVAS_HEIGHT, parts);
                 }
             }
 
