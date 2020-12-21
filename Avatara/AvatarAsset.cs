@@ -26,13 +26,13 @@ namespace Avatara
 
             if (action == "lay")
             {
-                this.ImageY = Y + (canvasW / 2) + (isSmall ? -5 : -22);
+                this.ImageY = Y + (canvasW / 2) + (isSmall ? -5 : -20);
                 this.ImageX = X + (canvasH / 2) - (isSmall ? -11 : -10);
             }
             else
             {
                 this.ImageX = X + (canvasW / 2) + (isSmall ? 5 : 10);
-                this.ImageY = Y + (canvasH / 2) - (isSmall ? 11 : 22);
+                this.ImageY = Y + (canvasH / 2) - (isSmall ? 11 : 20);
             }
         }
 
