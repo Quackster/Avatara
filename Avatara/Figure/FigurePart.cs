@@ -63,7 +63,7 @@ namespace Avatara.Figure
                 case "rs":
                     return 11;
                 case "ey":
-                    return 23;
+                    return 24;
                 case "li":
                     return 0;
                 case "hrb":
