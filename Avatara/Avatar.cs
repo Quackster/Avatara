@@ -44,20 +44,22 @@ namespace Avatara
                 CANVAS_WIDTH = CANVAS_WIDTH / 2;
             }
 
+            Action = action;
+            Gesture = gesture;
+
             if (action == "lay")
             {
                 var temp = CANVAS_WIDTH;
                 CANVAS_WIDTH = CANVAS_HEIGHT;
                 CANVAS_HEIGHT = temp;
 
-                gesture = "lay";
+                this.Gesture = "lay";
+                this.Action = "lay";
+                this.HeadDirection = this.BodyDirection;
             }
 
             BodyCanvas = new Image<Rgba32>(CANVAS_HEIGHT, CANVAS_WIDTH, HexToColor("transparent"));
             FaceCanvas = new Image<Rgba32>(CANVAS_HEIGHT, CANVAS_WIDTH, HexToColor("transparent"));
-
-            Action = action;
-            Gesture = gesture;
         }
 
         public byte[] Run()

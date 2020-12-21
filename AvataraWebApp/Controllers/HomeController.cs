@@ -34,8 +34,29 @@ namespace AvataraWebApp.Controllers
             }
 
             bool isSmall = false;
-            int renderDirection = 0;
+            int bodyDirection = 0;
+            int headDirection = 0;
             string figure = null;
+            string action = "std";
+            string gesture = "sml";
+
+            if (Request.Query.ContainsKey("figure"))
+            {
+                Request.Query.TryGetValue("figure", out var value);
+                figure = value.ToString();
+            }
+
+            if (Request.Query.ContainsKey("action"))
+            {
+                Request.Query.TryGetValue("action", out var value);
+                action = value.ToString();
+            }
+
+            if (Request.Query.ContainsKey("gesture"))
+            {
+                Request.Query.TryGetValue("gesture", out var value);
+                gesture = value.ToString();
+            }
 
             if (Request.Query.ContainsKey("figure"))
             {
@@ -53,14 +74,23 @@ namespace AvataraWebApp.Controllers
                 }
             }
 
-
             if (Request.Query.ContainsKey("direction"))
             {
                 Request.Query.TryGetValue("direction", out var value);
 
                 if (value.ToString().IsNumeric())
                 {
-                    renderDirection = int.Parse(value.ToString());
+                    bodyDirection = int.Parse(value.ToString());
+                }
+            }
+
+            if (Request.Query.ContainsKey("head_direction"))
+            {
+                Request.Query.TryGetValue("head_direction", out var value);
+
+                if (value.ToString().IsNumeric())
+                {
+                    headDirection = int.Parse(value.ToString());
                 }
             }
 
@@ -70,13 +100,13 @@ namespace AvataraWebApp.Controllers
 
                 if (value.ToString().IsNumeric())
                 {
-                    renderDirection = int.Parse(value.ToString());
+                    bodyDirection = int.Parse(value.ToString());
                 }
             }
 
             if (figure != null && figure.Length > 0)
             {
-                var furni = new Avatar(figure, isSmall, renderDirection, renderDirection, figuredataReader);
+                var furni = new Avatar(figure, isSmall, bodyDirection, headDirection, figuredataReader, action: action, gesture: gesture);
 
                 return File(furni.Run(), "image/png");
             }
