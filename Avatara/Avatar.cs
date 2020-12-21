@@ -23,7 +23,8 @@ namespace Avatara
         public string Action = "std"; // stand
         public int Frame;
 
-        public Image<Rgba32> DrawingCanvas;
+        public Image<Rgba32> BodyCanvas;
+        public Image<Rgba32> FaceCanvas;
 
         public int CANVAS_WIDTH = 110;
         public int CANVAS_HEIGHT = 64;
@@ -42,13 +43,13 @@ namespace Avatara
                 CANVAS_WIDTH = CANVAS_WIDTH / 2;
             }
 
-            DrawingCanvas = new Image<Rgba32>(CANVAS_HEIGHT, CANVAS_WIDTH, HexToColor("transparent"));
+            BodyCanvas = new Image<Rgba32>(CANVAS_HEIGHT, CANVAS_WIDTH, HexToColor("transparent"));
+            FaceCanvas = new Image<Rgba32>(CANVAS_HEIGHT, CANVAS_WIDTH, HexToColor("transparent"));
             Action = action;
         }
 
         public byte[] Run()
         {
-            bool isValid = ValidateFigure();
             var buildQueue = BuildDrawQueue();
 
             if (buildQueue == null)
@@ -59,73 +60,102 @@ namespace Avatara
 
         private byte[] DrawImage(List<AvatarAsset> buildQueue)
         {
-            using (var canvas = this.DrawingCanvas)
+            using (var bodyCanvas = this.BodyCanvas)
             {
-                foreach (var asset in buildQueue)
+                using (var faceCanvas = this.BodyCanvas)
                 {
-                    var image = SixLabors.ImageSharp.Image.Load<Rgba32>(asset.FileName);
-
-                    if (buildQueue.Count(x => x.Set.HiddenLayers.Contains(asset.Part.Type)) > 0)
-                        continue;
-
-                    if (asset.Part.Type != "ey")
+                    foreach (var asset in buildQueue)
                     {
-                        if (asset.Part.Colorable)
+                        var image = SixLabors.ImageSharp.Image.Load<Rgba32>(asset.FileName);
+
+                        if (buildQueue.Count(x => x.Set.HiddenLayers.Contains(asset.Part.Type)) > 0)
+                            continue;
+
+                        if (asset.Part.Type != "ey")
                         {
-                            string[] parts = asset.Parts;
-
-                            if (parts.Length > 2)
+                            if (asset.Part.Colorable)
                             {
-                                var paletteId = int.Parse(parts[2]);
+                                string[] parts = asset.Parts;
 
-                                if (!FiguredataReader.FigureSetTypes.ContainsKey(parts[0]))
-                                    continue;
-
-                                var figureTypeSet = FiguredataReader.FigureSetTypes[parts[0]];
-                                var palette = FiguredataReader.FigurePalettes[figureTypeSet.PaletteId];
-                                var colourData = palette.FirstOrDefault(x => x.ColourId == parts[2]);
-
-                                if (colourData == null)
+                                if (parts.Length > 2)
                                 {
-                                    continue;
+                                    var paletteId = int.Parse(parts[2]);
+
+                                    if (!FiguredataReader.FigureSetTypes.ContainsKey(parts[0]))
+                                        continue;
+
+                                    var figureTypeSet = FiguredataReader.FigureSetTypes[parts[0]];
+                                    var palette = FiguredataReader.FigurePalettes[figureTypeSet.PaletteId];
+                                    var colourData = palette.FirstOrDefault(x => x.ColourId == parts[2]);
+
+                                    if (colourData == null)
+                                    {
+                                        continue;
+                                    }
+
+                                    TintImage(image, colourData.HexColor, 255);
+
                                 }
-
-                                TintImage(image, colourData.HexColor, 255);
-
                             }
                         }
-                    }
-                    else
-                    {
-                        TintImage(image, "FFFFFF", 255);
-                    }
-
-                    var graphicsOptions = new GraphicsOptions();
-                    graphicsOptions.ColorBlendingMode = PixelColorBlendingMode.Normal;
-
-                    try
-                    {
-                        canvas.Mutate(ctx =>
+                        else
                         {
-                            ctx.DrawImage(image, new SixLabors.ImageSharp.Point(canvas.Width - asset.ImageX, canvas.Height - asset.ImageY), graphicsOptions);
+                            TintImage(image, "FFFFFF", 255);
+                        }
+
+                        var graphicsOptions = new GraphicsOptions();
+                        graphicsOptions.ColorBlendingMode = PixelColorBlendingMode.Normal;
+
+                        try
+                        {
+                            if (this.IsHead(asset.Part.Type))
+                            {
+                                faceCanvas.Mutate(ctx =>
+                                {
+                                    ctx.DrawImage(image, new SixLabors.ImageSharp.Point(faceCanvas.Width - asset.ImageX, faceCanvas.Height - asset.ImageY), graphicsOptions);
+                                });
+                            }
+                            else
+                            {
+                                bodyCanvas.Mutate(ctx =>
+                                {
+                                    ctx.DrawImage(image, new SixLabors.ImageSharp.Point(bodyCanvas.Width - asset.ImageX, bodyCanvas.Height - asset.ImageY), graphicsOptions);
+                                });
+                            }
+                        }
+                        catch { }
+                    }
+
+                    if (BodyDirection == 4 || BodyDirection == 6 || BodyDirection == 5)
+                    {
+                        bodyCanvas.Mutate(ctx =>
+                        {
+                            ctx.Flip(FlipMode.Horizontal);
                         });
-                    } catch { }
-                }
+                    }
 
-                if (BodyDirection == 4 || BodyDirection == 6 || BodyDirection == 5)
-                {
-                    canvas.Mutate(ctx =>
+                    if (HeadDirection == 4 || HeadDirection == 6 || HeadDirection == 5)
                     {
-                        ctx.Flip(FlipMode.Horizontal);
+                        faceCanvas.Mutate(ctx =>
+                        {
+                            ctx.Flip(FlipMode.Horizontal);
+                        });
+
+                       
+                    }
+
+                    bodyCanvas.Mutate(ctx =>
+                    {
+                        ctx.DrawImage(faceCanvas, 1f);
                     });
-                }
 
-                using (Bitmap tempBitmap = canvas.ToBitmap())
-                {
-                    // Crop the image
-                    //using (Bitmap croppedBitmap = //ImageUtil.TrimBitmap(tempBitmap, HexToColor("transparent")))
+                    using (Bitmap tempBitmap = bodyCanvas.ToBitmap())
                     {
-                        return RenderImage(tempBitmap);
+                        // Crop the image
+                        //using (Bitmap croppedBitmap = //ImageUtil.TrimBitmap(tempBitmap, HexToColor("transparent")))
+                        {
+                            return RenderImage(tempBitmap);
+                        }
                     }
                 }
             }
@@ -137,28 +167,7 @@ namespace Avatara
         }
 
 
-        private void TintImage(Image<Rgba32> image, string colourCode, byte alpha)
-        {
-            var rgb = HexToColor(colourCode);
 
-            for (int x = 0; x < image.Width; x++)
-            {
-                for (int y = 0; y < image.Height; y++)
-                {
-                    var current = image[x, y];
-
-                    if (current.A > 0)
-                    {
-                        current.R = (byte)(rgb.R * current.R / 255);
-                        current.G = (byte)(rgb.G * current.G / 255);
-                        current.B = (byte)(rgb.B * current.B / 255);
-                        current.A = alpha;
-                    }
-
-                    image[x, y] = current;
-                }
-            }
-        }
 
         private List<AvatarAsset> BuildDrawQueue()
         {
@@ -213,16 +222,33 @@ namespace Avatara
             if (document == null)
                 return null;
 
-            int direction = BodyDirection;
+            int direction;
 
-            if (BodyDirection == 4)
-                direction = 2;
+            if (IsHead(part.Type))
+            {
+                direction = HeadDirection;
 
-            if (BodyDirection == 6)
-                direction = 0;
+                if (HeadDirection == 4)
+                    direction = 2;
 
-            if (BodyDirection == 5)
-                direction = 1;
+                if (HeadDirection == 6)
+                    direction = 0;
+
+                if (HeadDirection == 5)
+                    direction = 1;
+            } else
+            {
+                direction = BodyDirection;
+
+                if (BodyDirection == 4)
+                    direction = 2;
+
+                if (BodyDirection == 6)
+                    direction = 0;
+
+                if (BodyDirection == 5)
+                    direction = 1;
+            }
 
             var asset = LocateAsset((this.IsSmall ? "sh" : "h") + "_" + Action + "_" + part.Type + "_" + part.Id + "_" + direction + "_" + Frame, document, parts, part, set);
 
@@ -236,6 +262,18 @@ namespace Avatara
             }
 
             return asset;
+        }
+
+        public bool IsHead(string figurePart)
+        {
+            return figurePart.Contains("hr") ||
+                figurePart.Contains("hd") ||
+                figurePart.Contains("he") ||
+                figurePart.Contains("ha") ||
+                figurePart.Contains("ea") ||
+                figurePart.Contains("fa") ||
+                figurePart.Contains("ey") ||
+                figurePart.Contains("fc");
         }
 
         private AvatarAsset LocateAsset(string assetName, FigureDocument document, string[] parts, FigurePart part, FigureSet set)
@@ -271,81 +309,30 @@ namespace Avatara
 
             return null;
         }
-
-        public bool ValidateFigure()
+        
+        private void TintImage(Image<Rgba32> image, string colourCode, byte alpha)
         {
-            //System.out.println("Validating: " + figure);
-            String[] figureData = Figure.Split(".");
+            var rgb = HexToColor(colourCode);
 
-            if (figureData.Length == 0)
+            for (int x = 0; x < image.Width; x++)
             {
-                return false;
-            }
-
-            List<string> sets = new List<string>();
-
-            foreach (string data in figureData)
-            {
-                String[] parts = data.Split("-");
-
-                if (parts.Length < 2 || parts.Length > 3)
+                for (int y = 0; y < image.Height; y++)
                 {
-                    return false;
-                }
+                    var current = image[x, y];
 
-                sets.Add(parts[0]);
-            }
-
-            foreach (var figureSetType in FiguredataReader.FigureSetTypes.Values)
-            {
-                if (figureSetType.IsMandatory && !sets.Contains(figureSetType.Set))
-                {
-                    return false;
-                }
-            }
-
-            foreach (string data in figureData)
-            {
-                string[] parts = data.Split("-");
-
-                if (parts.Length < 2 || parts.Length > 3)
-                {
-                    return false;
-                }
-
-                String set = parts[0];
-                String setId = parts[1];
-
-                var figureSet = FiguredataReader.FigureSets.Values.FirstOrDefault(s =>
-                        s.SetType == set &&
-                        s.Id == setId);
-
-                if (figureSet == null)
-                {
-                    return false;
-                }
-
-
-                if (!figureSet.Selectable)
-                {
-                    return false;
-                }
-
-                var figureSetType = FiguredataReader.FigureSetTypes[set];
-
-                if (parts.Length > 2 && parts[2].Length > 0)
-                {
-                    var paletteId = parts[2];
-
-                    if (FiguredataReader.FigurePalettes[figureSetType.PaletteId].Count(palette => palette.ColourId == paletteId) == 0)
+                    if (current.A > 0)
                     {
-                        return false;
+                        current.R = (byte)(rgb.R * current.R / 255);
+                        current.G = (byte)(rgb.G * current.G / 255);
+                        current.B = (byte)(rgb.B * current.B / 255);
+                        current.A = alpha;
                     }
+
+                    image[x, y] = current;
                 }
             }
-
-            return true;
         }
+
         public static Rgba32 HexToColor(string hexString)
         {
             if (hexString.ToLower() == "transparent")
