@@ -248,12 +248,14 @@ namespace Avatara
                 }
             }
 
+            /*
             var carryItemAsset = this.LoadCarryItemAsset(62);
 
             if (carryItemAsset != null)
             {
                 queue.Add(carryItemAsset);
             }
+            */
 
             queue = queue.OrderBy(x => x.Part.OrderId).ToList();
             queue.AddRange(assetLast);
