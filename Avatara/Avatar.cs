@@ -20,7 +20,8 @@ namespace Avatara
         public int BodyDirection;
         public int HeadDirection;
         public FiguredataReader FiguredataReader;
-        public string Action = "std"; // stand
+        public string Action; // stand
+        public string Gesture;
         public int Frame;
 
         public Image<Rgba32> BodyCanvas;
@@ -29,7 +30,7 @@ namespace Avatara
         public int CANVAS_WIDTH = 110;
         public int CANVAS_HEIGHT = 64;
 
-        public Avatar(string figure, bool isSmall, int bodyDirection, int headDirection, FiguredataReader figuredataReader, string action = "std")
+        public Avatar(string figure, bool isSmall, int bodyDirection, int headDirection, FiguredataReader figuredataReader, string action = "std", string gesture = "sml")
         {
             Figure = figure;
             IsSmall = isSmall;
@@ -43,9 +44,20 @@ namespace Avatara
                 CANVAS_WIDTH = CANVAS_WIDTH / 2;
             }
 
+            if (action == "lay")
+            {
+                var temp = CANVAS_WIDTH;
+                CANVAS_WIDTH = CANVAS_HEIGHT;
+                CANVAS_HEIGHT = temp;
+
+                gesture = "lay";
+            }
+
             BodyCanvas = new Image<Rgba32>(CANVAS_HEIGHT, CANVAS_WIDTH, HexToColor("transparent"));
             FaceCanvas = new Image<Rgba32>(CANVAS_HEIGHT, CANVAS_WIDTH, HexToColor("transparent"));
+
             Action = action;
+            Gesture = gesture;
         }
 
         public byte[] Run()
@@ -223,10 +235,12 @@ namespace Avatara
                 return null;
 
             int direction;
+            string gesture;
 
             if (IsHead(part.Type))
             {
                 direction = HeadDirection;
+                gesture = Gesture;
 
                 if (HeadDirection == 4)
                     direction = 2;
@@ -239,6 +253,7 @@ namespace Avatara
             } else
             {
                 direction = BodyDirection;
+                gesture = Action;
 
                 if (BodyDirection == 4)
                     direction = 2;
@@ -250,7 +265,7 @@ namespace Avatara
                     direction = 1;
             }
 
-            var asset = LocateAsset((this.IsSmall ? "sh" : "h") + "_" + Action + "_" + part.Type + "_" + part.Id + "_" + direction + "_" + Frame, document, parts, part, set);
+            var asset = LocateAsset((this.IsSmall ? "sh" : "h") + "_" + gesture + "_" + part.Type + "_" + part.Id + "_" + direction + "_" + Frame, document, parts, part, set);
 
             if (asset == null)
                 asset = LocateAsset((this.IsSmall ? "sh" : "h") + "_" + "std" + "_" + part.Type + "_" + part.Id + "_" + direction + "_" + Frame, document, parts, part, set);
@@ -303,7 +318,7 @@ namespace Avatara
 
                     var offsets = offsetData.Attributes.GetNamedItem("value").InnerText.Split(',');
 
-                    return new AvatarAsset(this.IsSmall, name, FileUtil.SolveFile("figuredata/" + document.FileName + "/", name), int.Parse(offsets[0]), int.Parse(offsets[1]), part, set, CANVAS_WIDTH, CANVAS_HEIGHT, parts);
+                    return new AvatarAsset(this.IsSmall, Action, name, FileUtil.SolveFile("figuredata/" + document.FileName + "/", name), int.Parse(offsets[0]), int.Parse(offsets[1]), part, set, CANVAS_WIDTH, CANVAS_HEIGHT, parts);
                 }
             }
 
