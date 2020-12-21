@@ -31,7 +31,7 @@ namespace Avatara
         public int CANVAS_WIDTH = 64;
         public bool RenderHead;
 
-        public Avatar(string figure, bool isSmall, int bodyDirection, int headDirection, FiguredataReader figuredataReader, string action = "std", string gesture = "sml", bool headOnly = false)
+        public Avatar(string figure, bool isSmall, int bodyDirection, int headDirection, FiguredataReader figuredataReader, string action = "std", string gesture = "sml", bool headOnly = false, int frame = 1)
         {
             Figure = figure;
             IsSmall = isSmall;
@@ -68,6 +68,7 @@ namespace Avatara
 
             BodyCanvas = new Image<Rgba32>(CANVAS_WIDTH, CANVAS_HEIGHT, HexToColor("transparent"));
             FaceCanvas = new Image<Rgba32>(CANVAS_WIDTH, CANVAS_HEIGHT, HexToColor("transparent"));
+            Frame = frame - 1;
         }
 
         public byte[] Run()
@@ -297,6 +298,9 @@ namespace Avatara
 
             if (asset == null)
                 asset = LocateAsset((this.IsSmall ? "sh" : "h") + "_" + "std" + "_" + part.Type + "_" + part.Id + "_" + direction + "_" + Frame, document, parts, part, set);
+
+            if (asset == null)
+                asset = LocateAsset((this.IsSmall ? "sh" : "h") + "_" + "std" + "_" + part.Type + "_" + part.Id + "_" + direction + "_" + 0, document, parts, part, set);
 
             if (IsSmall)
             {
