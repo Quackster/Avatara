@@ -27,21 +27,23 @@ namespace Avatara
         public Image<Rgba32> BodyCanvas;
         public Image<Rgba32> FaceCanvas;
 
-        public int CANVAS_WIDTH = 110;
-        public int CANVAS_HEIGHT = 64;
+        public int CANVAS_HEIGHT = 110;
+        public int CANVAS_WIDTH = 64;
+        public bool RenderHead;
 
-        public Avatar(string figure, bool isSmall, int bodyDirection, int headDirection, FiguredataReader figuredataReader, string action = "std", string gesture = "sml")
+        public Avatar(string figure, bool isSmall, int bodyDirection, int headDirection, FiguredataReader figuredataReader, string action = "std", string gesture = "sml", bool headOnly = false)
         {
             Figure = figure;
             IsSmall = isSmall;
             BodyDirection = bodyDirection;
             HeadDirection = headDirection;
             FiguredataReader = figuredataReader;
+            RenderHead = headOnly;
 
             if (isSmall)
             {
-                CANVAS_HEIGHT = CANVAS_HEIGHT / 2;
                 CANVAS_WIDTH = CANVAS_WIDTH / 2;
+                CANVAS_HEIGHT = CANVAS_HEIGHT / 2;
             }
 
             Action = action;
@@ -49,17 +51,23 @@ namespace Avatara
 
             if (action == "lay")
             {
-                var temp = CANVAS_WIDTH;
-                CANVAS_WIDTH = CANVAS_HEIGHT;
-                CANVAS_HEIGHT = temp;
+                var temp = CANVAS_HEIGHT;
+                CANVAS_HEIGHT = CANVAS_WIDTH;
+                CANVAS_WIDTH = temp;
 
                 this.Gesture = "lay";
                 this.Action = "lay";
                 this.HeadDirection = this.BodyDirection;
+
+                if (this.BodyDirection != 2 && this.BodyDirection != 4)
+                    this.BodyDirection = 2;
+
+                if (this.HeadDirection != 2 && this.HeadDirection != 4)
+                    this.HeadDirection = 2;
             }
 
-            BodyCanvas = new Image<Rgba32>(CANVAS_HEIGHT, CANVAS_WIDTH, HexToColor("transparent"));
-            FaceCanvas = new Image<Rgba32>(CANVAS_HEIGHT, CANVAS_WIDTH, HexToColor("transparent"));
+            BodyCanvas = new Image<Rgba32>(CANVAS_WIDTH, CANVAS_HEIGHT, HexToColor("transparent"));
+            FaceCanvas = new Image<Rgba32>(CANVAS_WIDTH, CANVAS_HEIGHT, HexToColor("transparent"));
         }
 
         public byte[] Run()
@@ -76,7 +84,7 @@ namespace Avatara
         {
             using (var bodyCanvas = this.BodyCanvas)
             {
-                using (var faceCanvas = this.BodyCanvas)
+                using (var faceCanvas = this.FaceCanvas)
                 {
                     foreach (var asset in buildQueue)
                     {
@@ -140,6 +148,7 @@ namespace Avatara
                         catch { }
                     }
 
+
                     if (BodyDirection == 4 || BodyDirection == 6 || BodyDirection == 5)
                     {
                         bodyCanvas.Mutate(ctx =>
@@ -154,20 +163,34 @@ namespace Avatara
                         {
                             ctx.Flip(FlipMode.Horizontal);
                         });
-
-                       
                     }
 
-                    bodyCanvas.Mutate(ctx =>
-                    {
-                        ctx.DrawImage(faceCanvas, 1f);
-                    });
+                    var theCanvas = bodyCanvas;
 
-                    using (Bitmap tempBitmap = bodyCanvas.ToBitmap())
+                    if (!RenderHead)
                     {
-                        // Crop the image
-                        //using (Bitmap croppedBitmap = //ImageUtil.TrimBitmap(tempBitmap, HexToColor("transparent")))
+                        bodyCanvas.Mutate(ctx =>
                         {
+                            ctx.DrawImage(faceCanvas, 1f);
+                        });
+                    }
+                    else
+                    {
+                        theCanvas = faceCanvas;
+                    }
+
+                    using (Bitmap tempBitmap = theCanvas.ToBitmap())
+                    {
+                        if (RenderHead)
+                        {
+                            using (var bitmap = ImageUtil.TrimBitmap(tempBitmap))
+                            {
+                                return RenderImage(bitmap);
+                            }
+                        }
+                        else
+                        {
+                            // Crop the image
                             return RenderImage(tempBitmap);
                         }
                     }
@@ -179,9 +202,6 @@ namespace Avatara
         {
             return croppedBitmap.ToByteArray();
         }
-
-
-
 
         private List<AvatarAsset> BuildDrawQueue()
         {
@@ -267,6 +287,12 @@ namespace Avatara
                     direction = 1;
             }
 
+            if (Action == "lay")
+            {
+                if (BodyDirection == 4)
+                    direction = 2;
+            }
+
             var asset = LocateAsset((this.IsSmall ? "sh" : "h") + "_" + gesture + "_" + part.Type + "_" + part.Id + "_" + direction + "_" + Frame, document, parts, part, set);
 
             if (asset == null)
@@ -320,7 +346,7 @@ namespace Avatara
 
                     var offsets = offsetData.Attributes.GetNamedItem("value").InnerText.Split(',');
 
-                    return new AvatarAsset(this.IsSmall, Action, name, FileUtil.SolveFile("figuredata/" + document.FileName + "/", name), int.Parse(offsets[0]), int.Parse(offsets[1]), part, set, CANVAS_WIDTH, CANVAS_HEIGHT, parts);
+                    return new AvatarAsset(this.IsSmall, Action, name, FileUtil.SolveFile("figuredata/" + document.FileName + "/", name), int.Parse(offsets[0]), int.Parse(offsets[1]), part, set, CANVAS_HEIGHT, CANVAS_WIDTH, parts);
                 }
             }
 
