@@ -69,6 +69,8 @@ namespace Avatara
             BodyCanvas = new Image<Rgba32>(CANVAS_WIDTH, CANVAS_HEIGHT, HexToColor("transparent"));
             FaceCanvas = new Image<Rgba32>(CANVAS_WIDTH, CANVAS_HEIGHT, HexToColor("transparent"));
             Frame = frame - 1;
+
+            LoadCarryItemAsset(3);
         }
 
         public byte[] Run()
@@ -83,6 +85,9 @@ namespace Avatara
 
         private byte[] DrawImage(List<AvatarAsset> buildQueue)
         {
+            var graphicsOptions = new GraphicsOptions();
+            graphicsOptions.ColorBlendingMode = PixelColorBlendingMode.Normal;
+
             using (var bodyCanvas = this.BodyCanvas)
             {
                 using (var faceCanvas = this.FaceCanvas)
@@ -125,9 +130,6 @@ namespace Avatara
                         {
                             TintImage(image, "FFFFFF", 255);
                         }
-
-                        var graphicsOptions = new GraphicsOptions();
-                        graphicsOptions.ColorBlendingMode = PixelColorBlendingMode.Normal;
 
                         try
                         {
@@ -217,6 +219,8 @@ namespace Avatara
 
             }
 
+            var assetLast = new List<AvatarAsset>();
+
             foreach (string data in figureData.Values)
             {
                 string[] parts = data.Split("-");
@@ -240,14 +244,53 @@ namespace Avatara
                             continue;
 
                         queue.Add(t);
-
                     }
                 }
             }
 
+            var carryItemAsset = this.LoadCarryItemAsset(62);
+
+            if (carryItemAsset != null)
+            {
+                queue.Add(carryItemAsset);
+            }
+
             queue = queue.OrderBy(x => x.Part.OrderId).ToList();
+            queue.AddRange(assetLast);
             return queue;
         }
+
+        private AvatarAsset LoadCarryItemAsset(int carryId)
+        {
+            var key = "ri" + (IsSmall ? "_sh" : "_h");
+            var document = FigureExtractor.Parts.ContainsKey(key) ? FigureExtractor.Parts[key] : null;
+
+            if (document == null)
+                return null;
+
+            int direction = BodyDirection;
+
+            if (BodyDirection == 4)
+                direction = 2;
+
+            if (BodyDirection == 6)
+                direction = 0;
+
+            if (BodyDirection == 5)
+                direction = 1;
+
+            var part = new FigurePart("0", "ri", false, 0);
+            var set = new FigureSet("ri", "", "", false, false, false);
+
+            var asset = LocateAsset((this.IsSmall ? "sh" : "h") + "_" + Action + "_ri_" + carryId + "_" + direction + "_" + Frame, document, null, part, set);
+        
+        
+            if (asset == null)
+                LocateAsset((this.IsSmall ? "sh" : "h") + "_std_ri_" + carryId + "_0_" + Frame, document, null, part, set);
+
+            return asset;
+        }
+
 
         private AvatarAsset LoadFigureAsset(string[] parts, FigurePart part, FigureSet set)
         {
@@ -292,6 +335,12 @@ namespace Avatara
             {
                 if (BodyDirection == 4)
                     direction = 2;
+            }
+
+
+            if (Action == "crr" && part.Type == "lh")
+            {
+                gesture  ="std";
             }
 
             var asset = LocateAsset((this.IsSmall ? "sh" : "h") + "_" + gesture + "_" + part.Type + "_" + part.Id + "_" + direction + "_" + Frame, document, parts, part, set);
