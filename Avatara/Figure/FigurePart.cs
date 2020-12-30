@@ -57,7 +57,7 @@ namespace Avatara.Figure
                 case "lh":
                     return 5;
                 case "ls":
-                    return 6;
+                    return 7;
                 case "rh":
                     return 10;
                 case "rs":
