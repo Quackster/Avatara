@@ -303,7 +303,7 @@ namespace Avatara
                 if (carryItemAsset != null)
                 {
                     // Remove drink drink canvas, hide behind face on these rotations
-                    if (BodyDirection == 1 || BodyDirection == 5)
+                    if (BodyDirection == 1 || BodyDirection == 5 || BodyDirection == 6 || BodyDirection == 0)
                     {
                         carryItemAsset.IsDrinkCanvas = false; // Render on body instead of drink canvas
                         carryItemAsset.RenderOrder = 0;
