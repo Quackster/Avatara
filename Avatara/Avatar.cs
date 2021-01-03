@@ -290,7 +290,7 @@ namespace Avatara
             int headRenderOrder = tempQueue.Where(x => IsHead(x.Part.Type)).Max(x => x.RenderOrder);
 
             // Render drink next
-            if (CarryDrink > -1)
+            if (CarryDrink > 0)
             {
                 var carryItemAsset = this.LoadCarryItemAsset(CarryDrink);
 

@@ -41,6 +41,7 @@ namespace AvataraWebApp.Controllers
             string gesture = "sml";
             bool headOnly = false;
             int frame = 1;
+            int carryDrink = -1;
 
             if (Request.Query.ContainsKey("figure"))
             {
@@ -113,9 +114,25 @@ namespace AvataraWebApp.Controllers
                 }
             }
 
+            if (Request.Query.ContainsKey("drk"))
+            {
+                Request.Query.TryGetValue("drk", out var value);
+                action = (value.ToString() == "1" || value.ToString() == "true") ? "drk" : action;
+            }
+
+            if (Request.Query.ContainsKey("crr"))
+            {
+                Request.Query.TryGetValue("crr", out var value);
+
+                if (value.ToString().IsNumeric())
+                {
+                    carryDrink = int.Parse(value.ToString());
+                }
+            }
+
             if (figure != null && figure.Length > 0)
             {
-                var furni = new Avatar(figure, isSmall, bodyDirection, headDirection, figuredataReader, action: action, gesture: gesture, headOnly: headOnly, frame: frame);
+                var furni = new Avatar(figure, isSmall, bodyDirection, headDirection, figuredataReader, action: action, gesture: gesture, headOnly: headOnly, frame: frame, carryDrink: carryDrink);
 
                 return File(furni.Run(), "image/png");
             }
