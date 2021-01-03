@@ -34,8 +34,8 @@ namespace AvataraWebApp.Controllers
             }
 
             bool isSmall = false;
-            int bodyDirection = 0;
-            int headDirection = 0;
+            int bodyDirection = 2;
+            int headDirection = 2;
             string figure = null;
             string action = "std";
             string gesture = "sml";
