@@ -56,6 +56,17 @@ namespace Avatara
                 var temp = CANVAS_HEIGHT;
                 CANVAS_HEIGHT = CANVAS_WIDTH;
                 CANVAS_WIDTH = temp;
+            }
+
+            BodyCanvas = new Image<Rgba32>(CANVAS_WIDTH, CANVAS_HEIGHT, HexToColor("transparent"));
+            FaceCanvas = new Image<Rgba32>(CANVAS_WIDTH, CANVAS_HEIGHT, HexToColor("transparent"));
+            DrinkCanvas = new Image<Rgba32>(CANVAS_WIDTH, CANVAS_HEIGHT, HexToColor("transparent"));
+
+            Frame = frame - 1;
+            CarryDrink = carryDrink;
+
+            if (action == "lay")
+            {
 
                 this.Gesture = "lay";
                 this.Action = "lay";
@@ -66,14 +77,9 @@ namespace Avatara
 
                 if (this.HeadDirection != 2 && this.HeadDirection != 4)
                     this.HeadDirection = 2;
+
+                this.CarryDrink = 0;
             }
-
-            BodyCanvas = new Image<Rgba32>(CANVAS_WIDTH, CANVAS_HEIGHT, HexToColor("transparent"));
-            FaceCanvas = new Image<Rgba32>(CANVAS_WIDTH, CANVAS_HEIGHT, HexToColor("transparent"));
-            DrinkCanvas = new Image<Rgba32>(CANVAS_WIDTH, CANVAS_HEIGHT, HexToColor("transparent"));
-
-            Frame = frame - 1;
-            CarryDrink = carryDrink;
         }
 
         public byte[] Run()
@@ -356,13 +362,13 @@ namespace Avatara
             var part = new FigurePart("0", "ri", false, 0);
             var set = new FigureSet("ri", "", "", false, false, false);
 
-            var asset = LocateAsset((this.IsSmall ? "sh" : "h") + "_" + Action + "_ri_" + carryId + "_" + direction + "_" + Frame, document, null, part, set);
+            var asset = LocateAsset((this.IsSmall ? "sh" : "h") + "_" + Action + "_ri_" + carryId + "_" + direction + "_0", document, null, part, set);
 
             if (asset == null)
-                asset = LocateAsset((this.IsSmall ? "sh" : "h") + "_crr_ri_" + carryId + "_" + direction + "_" + Frame, document, null, part, set);
+                asset = LocateAsset((this.IsSmall ? "sh" : "h") + "_crr_ri_" + carryId + "_" + direction + "_0", document, null, part, set);
 
             if (asset == null)
-                LocateAsset((this.IsSmall ? "sh" : "h") + "_std_ri_" + carryId + "_0_" + Frame, document, null, part, set);
+                asset = LocateAsset((this.IsSmall ? "sh" : "h") + "_std_ri_" + carryId + "_0_0", document, null, part, set);
 
             return asset;
         }
@@ -426,13 +432,19 @@ namespace Avatara
                     gesture = "std";
             }
 
-            var asset = LocateAsset((this.IsSmall ? "sh" : "h") + "_" + gesture + "_" + part.Type + "_" + part.Id + "_" + direction + "_" + Frame, document, parts, part, set);
+            AvatarAsset asset = null;
+
+            if (CarryDrink > 0 && (part.Type == "rs" || part.Type == "rh") && Action != "drk" && Action != "crr")
+                asset = LocateAsset((this.IsSmall ? "sh" : "h") + "_" + "crr" + "_" + part.Type + "_" + part.Id + "_" + direction + "_0", document, parts, part, set);
+
+            if (asset == null)
+                asset = LocateAsset((this.IsSmall ? "sh" : "h") + "_" + gesture + "_" + part.Type + "_" + part.Id + "_" + direction + "_" + Frame, document, parts, part, set);
 
             if (asset == null)
                 asset = LocateAsset((this.IsSmall ? "sh" : "h") + "_" + "std" + "_" + part.Type + "_" + part.Id + "_" + direction + "_" + Frame, document, parts, part, set);
-
+            
             if (asset == null)
-                asset = LocateAsset((this.IsSmall ? "sh" : "h") + "_" + "std" + "_" + part.Type + "_" + part.Id + "_" + direction + "_" + 0, document, parts, part, set);
+                asset = LocateAsset((this.IsSmall ? "sh" : "h") + "_" + "std" + "_" + part.Type + "_" + part.Id + "_" + direction + "_0", document, parts, part, set);
 
             if (IsSmall)
             {
