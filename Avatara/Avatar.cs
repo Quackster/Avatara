@@ -33,7 +33,7 @@ namespace Avatara
         public int CANVAS_WIDTH = 64;
         public bool RenderEntireFigure;
 
-        public Avatar(string figure, bool isSmall, int bodyDirection, int headDirection, FiguredataReader figuredataReader, string action = "std", string gesture = "sml", bool headOnly = false, int frame = 1, int carryDrink = -1)
+        public Avatar(string figure, bool isSmall, int bodyDirection, int headDirection, FiguredataReader figuredataReader, string action = "std", string gesture = "sml", bool headOnly = false, int frame = 1, int carryDrink = 0)
         { 
             Figure = figure;
             IsSmall = isSmall;
@@ -357,6 +357,9 @@ namespace Avatara
             var set = new FigureSet("ri", "", "", false, false, false);
 
             var asset = LocateAsset((this.IsSmall ? "sh" : "h") + "_" + Action + "_ri_" + carryId + "_" + direction + "_" + Frame, document, null, part, set);
+
+            if (asset == null)
+                asset = LocateAsset((this.IsSmall ? "sh" : "h") + "_crr_ri_" + carryId + "_" + direction + "_" + Frame, document, null, part, set);
 
             if (asset == null)
                 LocateAsset((this.IsSmall ? "sh" : "h") + "_std_ri_" + carryId + "_0_" + Frame, document, null, part, set);
