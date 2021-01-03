@@ -219,7 +219,7 @@ namespace Avatara
                     }
                     else
                     {
-                        if (!asset.Name.Contains("_drk_"))
+                        if (!asset.IsDrinkCanvas)
                         {
                             bodyCanvas.Mutate(ctx =>
                             {
@@ -296,16 +296,18 @@ namespace Avatara
 
                 if (carryItemAsset != null)
                 {
-                    // Render drink one above the max render order of the head
-                    carryItemAsset.RenderOrder = headRenderOrder + 1;
-                    /*if (BodyDirection != 1 && BodyDirection != 5)
+                    // Remove drink drink canvas, hide behind face on these rotations
+                    if (BodyDirection == 1 || BodyDirection == 5)
                     {
-                        carryItemAsset.RenderOrder = headRenderOrder + 1;
+                        carryItemAsset.IsDrinkCanvas = false; // Render on body instead of drink canvas
+                        carryItemAsset.RenderOrder = 0;
                     }
                     else
                     {
-                        carryItemAsset.RenderOrder = -100;
-                    }*/
+                        // Render drink one above the max render order of the head
+                        carryItemAsset.RenderOrder = headRenderOrder + 1;
+                        carryItemAsset.IsDrinkCanvas = true;
+                    }
 
                     tempQueue.Add(carryItemAsset);
 
@@ -317,9 +319,12 @@ namespace Avatara
                             if (asset == carryItemAsset)
                                 continue;
 
-                            // Render arms above the rest
+                            // Render arms and hands above the rest, including the item being carried
                             if (asset.Name.Contains("_drk_"))
+                            {
                                 asset.RenderOrder = 100;
+                                asset.IsDrinkCanvas = true;
+                            }
                         }
                     }
                 }

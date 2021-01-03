@@ -13,7 +13,8 @@ namespace Avatara
         public FigurePart Part;
         public FigureSet Set;
         public string[] Parts;
-        internal int RenderOrder;
+        public int RenderOrder;
+        public bool IsDrinkCanvas;
 
         public AvatarAsset(bool isSmall, string action, string name, string fileName, int X, int Y, FigurePart part, FigureSet set, int canvasW, int canvasH, string[] parts)
         {
@@ -25,6 +26,7 @@ namespace Avatara
             this.Set = set;
             this.Parts = parts;
             this.RenderOrder = this.Part.OrderId;
+            this.IsDrinkCanvas = false;
 
             if (action == "lay")
             {
