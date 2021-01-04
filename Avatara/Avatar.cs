@@ -8,8 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Avatara
 {
@@ -188,7 +186,7 @@ namespace Avatara
                     {
                         string[] parts = asset.Parts;
 
-                        if (parts.Length > 2)
+                        if (parts.Length > 2 && parts[2].Length > 0 && parts[2].IsNumeric())
                         {
                             var paletteId = int.Parse(parts[2]);
 
