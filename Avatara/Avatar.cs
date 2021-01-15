@@ -78,6 +78,35 @@ namespace Avatara
 
                 this.CarryDrink = 0;
             }
+
+            TryNudify(this.Figure);
+        }
+
+        private void TryNudify(string figure)
+        {
+            var oldFigureSets = figure.Split(".");
+            var newFigureSets = new List<string>();
+
+            foreach (var set in FiguredataReader.FigureSetTypes)
+            {
+                if (set.Value.IsMandatory)
+                {
+                    if (oldFigureSets.Count(x => x.Split('-')[0] == set.Key) == 0)
+                    {
+                        newFigureSets.Add(set.Key + "-1-");
+                    }
+                }
+            }
+
+            if (newFigureSets.Count > 0)
+            {
+                this.Figure = string.Join(".", oldFigureSets) + "." + string.Join(".", newFigureSets);
+            }
+
+            foreach (string data in figure.Split("."))
+            {
+                string[] parts = data.Split("-");
+            }
         }
 
         public byte[] Run()
@@ -191,18 +220,17 @@ namespace Avatara
                             var paletteId = int.Parse(parts[2]);
 
                             if (!FiguredataReader.FigureSetTypes.ContainsKey(parts[0]))
-                                return;
-
-                            var figureTypeSet = FiguredataReader.FigureSetTypes[parts[0]];
-                            var palette = FiguredataReader.FigurePalettes[figureTypeSet.PaletteId];
-                            var colourData = palette.FirstOrDefault(x => x.ColourId == parts[2]);
-
-                            if (colourData == null)
                             {
-                                return;
-                            }
+                                var figureTypeSet = FiguredataReader.FigureSetTypes[parts[0]];
+                                var palette = FiguredataReader.FigurePalettes[figureTypeSet.PaletteId];
+                                var colourData = palette.FirstOrDefault(x => x.ColourId == parts[2]);
 
-                            TintImage(image, colourData.HexColor, 255);
+                                if (colourData != null)
+                                {
+
+                                    TintImage(image, colourData.HexColor, 255);
+                                }
+                            }
 
                         }
                     }
@@ -291,7 +319,8 @@ namespace Avatara
             }
 
             // Find maxiumum head render order (used for drinks)
-            int headRenderOrder = tempQueue.Where(x => IsHead(x.Part.Type)).Max(x => x.RenderOrder);
+            var headRenderList = tempQueue.Where(x => IsHead(x.Part.Type)).ToList();
+            int headRenderOrder = headRenderList.Count > 0 ? headRenderList.Max(x => x.RenderOrder) : 1;
 
             // Render drink next
             if (CarryDrink > 0)
