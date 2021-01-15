@@ -32,8 +32,8 @@ namespace AvataraWebApp.Controllers
                 figuredataReader.loadFigureSetTypes();
                 figuredataReader.LoadFigureSets();
             }
-
-            bool isSmall = false;
+            
+            string size = "b";
             int bodyDirection = 2;
             int headDirection = 2;
             string figure = null;
@@ -70,11 +70,7 @@ namespace AvataraWebApp.Controllers
             if (Request.Query.ContainsKey("size"))
             {
                 Request.Query.TryGetValue("size", out var value);
-
-                if (value == "s")
-                {
-                    isSmall = true;
-                }
+                size = value.ToString();
             }
 
             if (Request.Query.ContainsKey("head"))
@@ -132,7 +128,7 @@ namespace AvataraWebApp.Controllers
 
             if (figure != null && figure.Length > 0)
             {
-                var furni = new Avatar(figure, isSmall, bodyDirection, headDirection, figuredataReader, action: action, gesture: gesture, headOnly: headOnly, frame: frame, carryDrink: carryDrink);
+                var furni = new Avatar(figure, size, bodyDirection, headDirection, figuredataReader, action: action, gesture: gesture, headOnly: headOnly, frame: frame, carryDrink: carryDrink);
 
                 return File(furni.Run(), "image/png");
             }

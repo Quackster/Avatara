@@ -14,6 +14,7 @@ namespace Avatara
     public class Avatar
     {
         public string Figure;
+        public string Size;
         public bool IsSmall;
         public int BodyDirection;
         public int HeadDirection;
@@ -31,16 +32,17 @@ namespace Avatara
         public int CANVAS_WIDTH = 64;
         public bool RenderEntireFigure;
 
-        public Avatar(string figure, bool isSmall, int bodyDirection, int headDirection, FiguredataReader figuredataReader, string action = "std", string gesture = "sml", bool headOnly = false, int frame = 1, int carryDrink = 0)
+        public Avatar(string figure, string size, int bodyDirection, int headDirection, FiguredataReader figuredataReader, string action = "std", string gesture = "sml", bool headOnly = false, int frame = 1, int carryDrink = 0)
         { 
             Figure = figure;
-            IsSmall = isSmall;
+            Size = size.ToLower();
+            IsSmall = Size != "b" && Size != "l";
             BodyDirection = bodyDirection;
             HeadDirection = headDirection;
             FiguredataReader = figuredataReader;
             RenderEntireFigure = !headOnly;
 
-            if (isSmall)
+            if (IsSmall)
             {
                 CANVAS_WIDTH = CANVAS_WIDTH / 2;
                 CANVAS_HEIGHT = CANVAS_HEIGHT / 2;
@@ -87,6 +89,14 @@ namespace Avatara
             var oldFigureSets = figure.Split(".");
             var newFigureSets = new List<string>();
 
+            /*
+            foreach (string data in figure.Split("."))
+            {
+                string[] parts = data.Split("-");
+                Console.WriteLine(parts[0] + ": { set: '" + parts[1] + "', color: '" + (parts.Length > 2 ? parts[2] : "") + "' },");
+            }
+            */
+
             foreach (var set in FiguredataReader.FigureSetTypes)
             {
                 if (set.Value.IsMandatory)
@@ -107,6 +117,8 @@ namespace Avatara
             {
                 string[] parts = data.Split("-");
             }
+
+
         }
 
         public byte[] Run()
@@ -199,6 +211,26 @@ namespace Avatara
             }
         }
 
+        private byte[] RenderImage(Bitmap croppedBitmap)
+        {
+            if (Size == "l")
+            {
+                using (var image = croppedBitmap.ToImageSharpImage<Rgba32>())
+                {
+                    var resizeOptions = new ResizeOptions();
+                    resizeOptions.Size = new SixLabors.ImageSharp.Size(
+                       image.Width * 2, image.Height * 2
+                    );
+
+                    resizeOptions.Sampler = KnownResamplers.NearestNeighbor;
+                    image.Mutate(x => x.Resize(resizeOptions));
+
+                    return image.ToBitmap().ToByteArray();
+                }
+            }
+            return croppedBitmap.ToByteArray();
+        }
+
         private void DrawAsset(List<AvatarAsset> buildQueue, Image<Rgba32> bodyCanvas, Image<Rgba32> faceCanvas, Image<Rgba32> drinkCanvas, AvatarAsset asset)
         {
             var graphicsOptions = new GraphicsOptions();
@@ -219,7 +251,7 @@ namespace Avatara
                         {
                             var paletteId = int.Parse(parts[2]);
 
-                            if (!FiguredataReader.FigureSetTypes.ContainsKey(parts[0]))
+                            if (FiguredataReader.FigureSetTypes.ContainsKey(parts[0]))
                             {
                                 var figureTypeSet = FiguredataReader.FigureSetTypes[parts[0]];
                                 var palette = FiguredataReader.FigurePalettes[figureTypeSet.PaletteId];
@@ -271,10 +303,6 @@ namespace Avatara
             }
         }
 
-        private byte[] RenderImage(Bitmap croppedBitmap)
-        {
-            return croppedBitmap.ToByteArray();
-        }
 
         private List<AvatarAsset> BuildDrawQueue()
         {
