@@ -10,14 +10,18 @@ Compile the AvataraWebApp to the operating system of your choice (it runs on .NE
 Run the app.
 
 (On Linux for example)
+
 ``./AvataraWebApp --urls=http://*:8090/``
 
 (On Windows for example)
+
 ``AvataraWebApp.exe --urls=http://*:8090/``
 
 Then proxy it through PHP.
 
-```<?php
+```php
+<?php
 header ('Content-Type: image/png');
 echo file_get_contents("http://104.194.10.102:8090/?" . $_SERVER['QUERY_STRING'$
-?>```
+?>
+```
