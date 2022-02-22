@@ -22,18 +22,11 @@ namespace AvataraApp
                 figuredataReader.loadFigureSetTypes();
                 figuredataReader.LoadFigureSets();
 
-                string figure = "hd-600-7.ch-645-66.lg-720-82.sh-725-80.hr-500-45";
-                //string figure = "hd-180-1.hr-100-.ch-260-62.lg-275-64.ea-1402-.ca-1806-73";
-                Console.WriteLine("Parsing: " + figure);
+                var avatar = new Avatar("ch-250-62", "b", 2, 2, figuredataReader, cropImage: true);
+                File.WriteAllBytes("figure-1.png", avatar.Run());
 
-                var avatar = new Avatar(figure, "b", 1, 1, figuredataReader, gesture: "", action: "drk", carryDrink: 3);
-                File.WriteAllBytes("figure1-1-drk.png", avatar.Run());
-
-                avatar = new Avatar(figure, "l", 2, 2, figuredataReader, gesture: "", action: "drk", carryDrink: 3);
-                File.WriteAllBytes("figure2-2-drk.png", avatar.Run());
-
-                avatar = new Avatar(figure, "b", 3, 3, figuredataReader, gesture: "", action: "drk", carryDrink: 3);
-                File.WriteAllBytes("figure3-3-drk.png", avatar.Run());
+                avatar = new Avatar("hd-206-7", "b", 2, 2, figuredataReader, headOnly: true);
+                File.WriteAllBytes("figure-2.png", avatar.Run());
 
 
                 Console.WriteLine("Done");

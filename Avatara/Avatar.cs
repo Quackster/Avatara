@@ -31,9 +31,9 @@ namespace Avatara
         public int CANVAS_HEIGHT = 110;
         public int CANVAS_WIDTH = 64;
         public bool RenderEntireFigure;
-        public bool Imager = false;
+        public bool CropImage = false;
 
-        public Avatar(string figure, string size, int bodyDirection, int headDirection, FiguredataReader figuredataReader, string action = "std", string gesture = "sml", bool headOnly = false, int frame = 1, int carryDrink = 0)
+        public Avatar(string figure, string size, int bodyDirection, int headDirection, FiguredataReader figuredataReader, string action = "std", string gesture = "sml", bool headOnly = false, int frame = 1, int carryDrink = 0, bool cropImage = false)
         {
             Figure = figure;
             Size = size.ToLower();
@@ -42,16 +42,7 @@ namespace Avatara
             HeadDirection = headDirection;
             FiguredataReader = figuredataReader;
             RenderEntireFigure = !headOnly;
-
-            var sets = figure.Split(".");
-
-            if (sets.Length == 1)
-            {
-                Imager = true;
-
-                //CANVAS_WIDTH /= 2;
-                CANVAS_HEIGHT /= 2;
-            }
+            CropImage = cropImage;
 
             if (IsSmall)
             {
@@ -222,6 +213,8 @@ namespace Avatara
 
         private byte[] RenderImage(Bitmap croppedBitmap)
         {
+            Bitmap bitmap = null;
+
             if (Size == "l")
             {
                 using (var image = croppedBitmap.ToImageSharpImage<Rgba32>())
@@ -234,10 +227,24 @@ namespace Avatara
                     resizeOptions.Sampler = KnownResamplers.NearestNeighbor;
                     image.Mutate(x => x.Resize(resizeOptions));
 
-                    return image.ToBitmap().ToByteArray();
+                    bitmap = image.ToBitmap();
                 }
             }
-            return croppedBitmap.ToByteArray();
+            else
+            {
+                bitmap = croppedBitmap;
+            }
+
+            if (CropImage)
+            {
+                // Crop the image
+                using (Bitmap b = ImageUtil.TrimBitmap(bitmap))
+                {
+                    return b.ToByteArray();
+                }
+            }
+
+            return bitmap.ToByteArray();
         }
 
         private void DrawAsset(List<AvatarAsset> buildQueue, Image<Rgba32> bodyCanvas, Image<Rgba32> faceCanvas, Image<Rgba32> drinkCanvas, AvatarAsset asset)
@@ -285,14 +292,11 @@ namespace Avatara
             try
             {
                 if (this.IsHead(asset.Part.Type))
-                {       
+                {
                     var point = new SixLabors.ImageSharp.Point(faceCanvas.Width - asset.ImageX, faceCanvas.Height - asset.ImageY);
 
-                    if (Imager)
-                    {
-                        point.X -= faceCanvas.Height /2;
-                        point.Y += faceCanvas.Height / 2;
-                    }
+                    if (CropImage)
+                        point = MutatePoint(point, faceCanvas);
 
                     faceCanvas.Mutate(ctx =>
                     {
@@ -305,11 +309,8 @@ namespace Avatara
                     {
                         var point = new SixLabors.ImageSharp.Point(bodyCanvas.Width - asset.ImageX, bodyCanvas.Height - asset.ImageY);
 
-                        if (Imager)
-                        {
-                            point.X -= faceCanvas.Height / 2;
-                            point.Y += faceCanvas.Height / 2;
-                        }
+                        if (CropImage)
+                            point = MutatePoint(point, bodyCanvas);
 
                         bodyCanvas.Mutate(ctx =>
                         {
@@ -320,11 +321,8 @@ namespace Avatara
                     {
                         var point = new SixLabors.ImageSharp.Point(bodyCanvas.Width - asset.ImageX, bodyCanvas.Height - asset.ImageY);
 
-                        if (Imager)
-                        {
-                            point.X -= faceCanvas.Height / 2;
-                            point.Y += faceCanvas.Height / 2;
-                        }
+                        if (CropImage)
+                            point = MutatePoint(point, bodyCanvas);
 
                         drinkCanvas.Mutate(ctx =>
                         {
@@ -336,6 +334,15 @@ namespace Avatara
             catch { }
         }
 
+        private SixLabors.ImageSharp.Point MutatePoint(SixLabors.ImageSharp.Point point, Image<Rgba32> canvas)
+        {
+            /*
+            point.X -= canvas.Height / 2;
+            point.Y += canvas.Width / 2;
+            */
+
+            return point;
+        }
 
         private List<AvatarAsset> BuildDrawQueue()
         {

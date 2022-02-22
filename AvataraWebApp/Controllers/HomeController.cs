@@ -42,6 +42,7 @@ namespace AvataraWebApp.Controllers
             bool headOnly = false;
             int frame = 1;
             int carryDrink = -1;
+            bool cropImage = false;
 
             if (Request.Query.ContainsKey("figure"))
             {
@@ -113,6 +114,12 @@ namespace AvataraWebApp.Controllers
             if (Request.Query.ContainsKey("drk"))
             {
                 Request.Query.TryGetValue("drk", out var value);
+                action = (value.ToString() == "1" || value.ToString() == "true") ? "drk" : action;
+            }
+
+            if (Request.Query.ContainsKey("crop"))
+            {
+                Request.Query.TryGetValue("crop", out var value);
                 action = (value.ToString() == "1" || value.ToString() == "true") ? "drk" : action;
             }
 
