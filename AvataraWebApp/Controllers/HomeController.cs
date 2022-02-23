@@ -120,7 +120,7 @@ namespace AvataraWebApp.Controllers
             if (Request.Query.ContainsKey("crop"))
             {
                 Request.Query.TryGetValue("crop", out var value);
-                action = (value.ToString() == "1" || value.ToString() == "true") ? "drk" : action;
+                cropImage = (value.ToString() == "1" || value.ToString() == "true");
             }
 
             if (Request.Query.ContainsKey("crr"))
@@ -135,7 +135,7 @@ namespace AvataraWebApp.Controllers
 
             if (figure != null && figure.Length > 0)
             {
-                var furni = new Avatar(figure, size, bodyDirection, headDirection, figuredataReader, action: action, gesture: gesture, headOnly: headOnly, frame: frame, carryDrink: carryDrink);
+                var furni = new Avatar(figure, size, bodyDirection, headDirection, figuredataReader, action: action, gesture: gesture, headOnly: headOnly, frame: frame, carryDrink: carryDrink, cropImage: cropImage);
 
                 return File(furni.Run(), "image/png");
             }
