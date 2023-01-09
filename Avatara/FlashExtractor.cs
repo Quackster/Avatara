@@ -14,22 +14,29 @@ namespace Avatara
 {
     public class FigureExtractor
     {
-        public static Dictionary<string, List<FigureDocument>> Parts;
+        // public static Dictionary<string, FigureAssetEntry> Parts;
+        public static Dictionary<string, string> Parts;
 
         public static void Parse()
         {
             if (Parts == null)
-                Parts = new Dictionary<string, List<FigureDocument>>();
+                Parts = new Dictionary<string, string>();
 
 
-            if (Parts.Count == 0 && Directory.GetDirectories("figuredata/compiled").Length > 1)
+            if (Parts.Count == 0 && Directory.GetFiles("figuredata/xml").Length > 1)
             {
-                foreach (var file in Directory.GetFiles("figuredata/compiled"))
+                foreach (var manfiest in Directory.GetFiles("figuredata/xml"))
                 {
-                    string fileName = Path.GetFileNameWithoutExtension(file);
-                    ParseXML(fileName, file);
+                    ParseXML(manfiest);
                 }
             }
+
+            if (!Directory.Exists(@"figuredata/xml"))
+                Directory.CreateDirectory(@"figuredata/xml");
+
+
+            if (!Directory.Exists(@"figuredata/images"))
+                Directory.CreateDirectory(@"figuredata/images");
 
             foreach (var file in Directory.GetFiles("figuredata/compiled"))
             {
@@ -39,14 +46,8 @@ namespace Avatara
                 //    return false;
 
 
-                if (!Directory.Exists(@"figuredata/" + fileName))
-                    Directory.CreateDirectory(@"figuredata/" + fileName);
-
                 var flash = new ShockwaveFlash(file);
                 flash.Disassemble();
-
-                if (!Directory.Exists(@"figuredata/" + fileName + "/xml"))
-                    Directory.CreateDirectory(@"figuredata/" + fileName + "/xml");
 
                 var symbolClass = flash.Tags.Where(t => t.Kind == TagKind.SymbolClass).Cast<SymbolClassTag>().First();
                 var imageTags = flash.Tags.Where(t => t.Kind == TagKind.DefineBitsLossless2).Cast<DefineBitsLossless2Tag>();
@@ -58,8 +59,8 @@ namespace Avatara
                     var type = name.Split('_')[name.Split('_').Length - 1];
                     var txt = Encoding.Default.GetString(data.Data);
 
-                    if (!File.Exists(@"figuredata/" + fileName + "/xml/" + type + ".xml"))
-                        File.WriteAllText(@"figuredata/" + fileName + "/xml/" + type + ".xml", txt);
+                    if (!File.Exists(@"figuredata/xml/" + fileName + ".xml"))
+                        File.WriteAllText(@"figuredata/xml/" + fileName + ".xml", txt);
                 }
 
                 var symbolsImages = new Dictionary<int, DefineBitsLossless2Tag>();
@@ -83,16 +84,19 @@ namespace Avatara
                     var image = symbolsImages[symbolId];
                     var xmlName = name.Substring(fileName.Length + 1);
 
-                    WriteImage(image, @"figuredata/" + fileName + "/" + xmlName + ".png");
+                    WriteImage(image, @"figuredata/images/" + xmlName + ".png");
                 }
+            }
 
-                ParseXML(fileName, file);
+            foreach (var manfiest in Directory.GetFiles("figuredata/xml"))
+            {
+                ParseXML(manfiest);
             }
         }
 
-        private static void ParseXML(string fileName, string file)
+        private static void ParseXML(string fileName)
         {
-            var xmlFile = FileUtil.SolveXmlFile("figuredata/" + fileName + "/xml/", "manifest");
+            var xmlFile = FileUtil.ReadeXmlFile(fileName);
             var list = xmlFile.SelectNodes("//manifest/library/assets/asset");
 
             for (int i = 0; i < list.Count; i++)
@@ -107,6 +111,8 @@ namespace Avatara
                 if (name.Split("_").Length < 3)
                     continue;
 
+                var offsets = asset.ChildNodes.Item(0)?.Attributes.GetNamedItem("value")?.InnerText;
+
                 /*if (Parts.ContainsKey(name.Split("_")[2] + (fileName.Contains("_50_") ? "_sh" : "_h")))
                     continue;
 
@@ -116,19 +122,21 @@ namespace Avatara
 
                 if (fileName.StartsWith("hh_ "))
                 {
-                    key = name.Split("_")[2] + "_" + name.Split("_")[0];
+                    key = name.Split("_")[2];// + "_" + name.Split("_")[0];
                 }
                 else
                 {
-                    key = name.Split("_")[2] + (fileName.Contains("_50_") ? "_sh" : "_h");
+                    key = name.Split("_")[2];// + (fileName.Contains("_50_") ? "_sh" : "_h");
                 }
 
+                /*
                 if (!Parts.ContainsKey(key))
                 {
                     Parts.Add(key, new List<FigureDocument>());
-                }
+                }*/
 
-                Parts[key].Add(new FigureDocument(fileName, xmlFile));
+                if (name != null && offsets != null && !Parts.ContainsKey(name))
+                    Parts.Add(name, offsets);//new FigureDocument(fileName, xmlFile));
             }
         }
 

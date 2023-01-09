@@ -26,7 +26,7 @@ namespace AvataraApp
             figuredataReader.LoadFigureSets("shockwave_figuredata");*/
 
             // cc-260-62.lg-270-64.hr-100-.ch-210-66.ha-3139-82.hd-209-1.sh-300-64
-            var avatar = new Avatar("hd-180-1.ch-260-62.lg-270-64.sh-300-64.ha-1008-62.ea-1402-62.ca-1806-73", "b", 2, 2, figuredataReader, cropImage: false);
+            var avatar = new Avatar("fa-1205-67.hd-180-17.lg-280-92.hr-170-37.cc-3246-62.ch-210-92", "b", 2, 2, figuredataReader, cropImage: false);
             File.WriteAllBytes("figure-1.png", avatar.Run());
 
             /*

@@ -115,7 +115,7 @@ namespace Avatara.Figure
                 var setType = list.Item(i);
                 String set = setType.Attributes.GetNamedItem("type").InnerText;
                 int paletteId = int.Parse(setType.Attributes.GetNamedItem("paletteid").InnerText);
-                bool isMandatory = setType.Attributes.GetNamedItem("mandatory").InnerText == "1";
+                bool isMandatory = setType.Attributes.GetNamedItem("mandatory")?.InnerText == "1";
 
                 this.FigureSetTypes.Add(set, new FigureSetType(set, paletteId, isMandatory));
             }

@@ -19,29 +19,35 @@ namespace Avatara.Util
             {
                 if (Path.GetFileNameWithoutExtension(file).Contains(fileNameContains))
                 {
-                    var text = File.ReadAllText(file);
-
-                    if (text.Contains("\n<?xml"))
-                    {
-                        text = text.Replace("\n<?xml", "<?xml");
-                        File.WriteAllText(file, text);
-                    }
-
-                    if (text.Contains("<graphics>"))
-                    {
-                        text = text.Replace("<graphics>", "");
-                        text = text.Replace("</graphics>", "            ");
-                        File.WriteAllText(file, text);
-                    }
-
-                    XmlDocument xmlDoc = new XmlDocument();
-                    xmlDoc.Load(file);
-
-                    return xmlDoc;
+                    return ReadeXmlFile(file);
                 }
             }
 
             return null;
+        }
+
+        public static XmlDocument ReadeXmlFile(string file)
+        {
+            var text = File.ReadAllText(file);
+
+            if (text.Contains("\n<?xml"))
+            {
+                text = text.Replace("\n<?xml", "<?xml");
+                File.WriteAllText(file, text);
+            }
+
+            if (text.Contains("<graphics>"))
+            {
+                text = text.Replace("<graphics>", "");
+                text = text.Replace("</graphics>", "            ");
+                File.WriteAllText(file, text);
+            }
+
+            XmlDocument xmlDoc = new XmlDocument();
+            xmlDoc.Load(file);
+
+            return xmlDoc;
+
         }
 
         public static string SolveFile(string outputDirectory, string fileNameContains, bool endsWith = true)

@@ -8,6 +8,8 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Reflection.Metadata;
+using System.Xml.Linq;
 
 namespace Avatara
 {
@@ -33,7 +35,7 @@ namespace Avatara
         public bool RenderEntireFigure;
         public bool CropImage = false;
 
-        public Avatar(string figure, string size, int bodyDirection, int headDirection, FiguredataReader figuredataReader, string action = "std", string gesture = "", bool headOnly = false, int frame = 1, int carryDrink = 0, bool cropImage = false)
+        public Avatar(string figure, string size, int bodyDirection, int headDirection, FiguredataReader figuredataReader, string action = "std", string gesture = "std", bool headOnly = false, int frame = 1, int carryDrink = 0, bool cropImage = false)
         {
             Figure = figure;
             Size = size.ToLower();
@@ -445,8 +447,47 @@ namespace Avatara
 
         private AvatarAsset LoadCarryItemAsset(int carryId)
         {
-            var key = "ri" + (IsSmall ? "_sh" : "_h");
-            var documents = FigureExtractor.Parts.ContainsKey(key) ? FigureExtractor.Parts[key] : null;
+            //var key = "ri";// + (IsSmall ? "_sh" : "_h");
+            //var documents = new List<FigureDocument>();//FigureExtractor.Parts.ContainsKey(key) ? FigureExtractor.Parts[key] : null;
+
+            //foreach (var document in documents)
+            //{
+                //if (document == null)
+                //    return null;
+
+                int direction = BodyDirection;
+
+                if (BodyDirection == 4)
+                    direction = 2;
+
+                if (BodyDirection == 6)
+                    direction = 0;
+
+                if (BodyDirection == 5)
+                    direction = 1;
+
+                var part = new FigurePart("0", "ri", false, 0);
+                var set = new FigureSet("ri", "", "", false, false, false);
+
+                var asset = LocateAsset((this.IsSmall ? "sh" : "h") + "_" + Action + "_ri_" + carryId + "_" + direction + "_0", null, part, set);
+
+                if (asset == null)
+                    asset = LocateAsset((this.IsSmall ? "sh" : "h") + "_crr_ri_" + carryId + "_" + direction + "_0", null, part, set);
+
+                if (asset == null)
+                    asset = LocateAsset((this.IsSmall ? "sh" : "h") + "_std_ri_" + carryId + "_0_0", null, part, set);
+
+                if (asset != null)
+                    return asset;
+            //}
+
+            return null;
+        }
+
+        /*        private AvatarAsset LoadCarryItemAsset(int carryId)
+        {
+            var key = "ri";// + (IsSmall ? "_sh" : "_h");
+            var documents = new List<FigureDocument>();//FigureExtractor.Parts.ContainsKey(key) ? FigureExtractor.Parts[key] : null;
 
             foreach (var document in documents)
             {
@@ -480,12 +521,98 @@ namespace Avatara
             }
 
             return null;
-        }
-
+        }*/
 
         private AvatarAsset LoadFigureAsset(string[] parts, FigurePart part, FigureSet set)
         {
-            var key = part.Type + (IsSmall ? "_sh" : "_h");
+            //var key = part.Type;// + (IsSmall ? "_sh" : "_h");
+            //var documents = new List<FigureDocument>();//FigureExtractor.Parts.ContainsKey(key) ? FigureExtractor.Parts[key] : new List<FigureDocument>();
+
+            //foreach (var document in documents)
+            //{
+            //    if (document == null)
+            //        return null;
+
+            int direction;
+            string gesture;
+
+            if (IsHead(part.Type))
+            {
+                direction = HeadDirection;
+                gesture = Gesture;
+
+                if (HeadDirection == 4)
+                    direction = 2;
+
+                if (HeadDirection == 6)
+                    direction = 0;
+
+                if (HeadDirection == 5)
+                    direction = 1;
+            }
+            else
+            {
+                direction = BodyDirection;
+                gesture = Action;
+
+                if (BodyDirection == 4)
+                    direction = 2;
+
+                if (BodyDirection == 6)
+                    direction = 0;
+
+                if (BodyDirection == 5)
+                    direction = 1;
+            }
+
+            // Hide left arm on side view
+            if (direction == 1 && part.Type == "ls")
+                return null;
+
+            if (Action == "lay")
+            {
+                if (BodyDirection == 4)
+                    direction = 2;
+            }
+
+            if (CarryDrink > 0 && Action != "lay" && Action != "drk")
+            {
+                var partsForAction = new string[] { "ls", "lh" };
+
+                if (partsForAction.Contains(part.Type))
+                    gesture = "std";
+            }
+
+            AvatarAsset asset = null;
+
+            if (CarryDrink > 0 && (part.Type == "rs" || part.Type == "rh") && Action != "drk" && Action != "crr")
+                asset = LocateAsset((this.IsSmall ? "sh" : "h") + "_" + "crr" + "_" + part.Type + "_" + part.Id + "_" + direction + "_0", parts, part, set);
+
+            if (asset == null)
+                asset = LocateAsset((this.IsSmall ? "sh" : "h") + "_" + gesture + "_" + part.Type + "_" + part.Id + "_" + direction + "_" + Frame, parts, part, set);
+
+            if (asset == null)
+                asset = LocateAsset((this.IsSmall ? "sh" : "h") + "_" + "std" + "_" + part.Type + "_" + part.Id + "_" + direction + "_" + Frame, parts, part, set);
+
+            if (asset == null)
+                asset = LocateAsset((this.IsSmall ? "sh" : "h") + "_" + "std" + "_" + part.Type + "_" + part.Id + "_" + direction + "_0", parts, part, set);
+
+            if (IsSmall)
+            {
+                if (asset == null)
+                    asset = LocateAsset((this.IsSmall ? "sh" : "h") + "_" + "std" + "_" + part.Type + "_" + 1 + "_" + direction + "_" + Frame, parts, part, set);
+            }
+
+            if (asset != null)
+                return asset;
+            //}
+
+            return null;
+        }
+
+        /*private AvatarAsset LoadFigureAsset(string[] parts, FigurePart part, FigureSet set)
+        {
+            var key = part.Type;// + (IsSmall ? "_sh" : "_h");
             var documents = FigureExtractor.Parts.ContainsKey(key) ? FigureExtractor.Parts[key] : new List<FigureDocument>();
 
             foreach (var document in documents)
@@ -568,7 +695,7 @@ namespace Avatara
             }
 
             return null;
-        }
+        }*/
 
         public bool IsHead(string figurePart)
         {
@@ -582,6 +709,20 @@ namespace Avatara
                 figurePart.Contains("fc");
         }
 
+        private AvatarAsset LocateAsset(string assetName, string[] parts, FigurePart part, FigureSet set)
+        {
+            var file = FileUtil.SolveFile("figuredata/images/", assetName);
+
+            if (file == null) return null;
+
+            var offsets = FigureExtractor.Parts.ContainsKey(assetName) ?  FigureExtractor.Parts[assetName] : null;
+
+            if (offsets == null) return null;
+
+            return new AvatarAsset(this.IsSmall, Action, assetName, file, int.Parse(offsets.Split(',')[0]), int.Parse(offsets.Split(',')[1]), part, set, CANVAS_HEIGHT, CANVAS_WIDTH, parts);
+        }
+
+        /*
         private AvatarAsset LocateAsset(string assetName, FigureDocument document, string[] parts, FigurePart part, FigureSet set)
         {
             var list = document.XmlFile.SelectNodes("//manifest/library/assets/asset");
@@ -614,7 +755,7 @@ namespace Avatara
             }
 
             return null;
-        }
+        */
 
         private void TintImage(Image<Rgba32> image, string colourCode, byte alpha)
         {
