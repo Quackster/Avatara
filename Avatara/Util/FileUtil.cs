@@ -46,23 +46,26 @@ namespace Avatara.Util
 
         public static string SolveFile(string outputDirectory, string fileNameContains, bool endsWith = true)
         {
-            foreach (var file in Directory.GetFiles(Path.Combine(outputDirectory), "*"))
+            try
             {
-                if (endsWith)
+                foreach (var file in Directory.GetFiles(Path.Combine(outputDirectory), "*"))
                 {
-                    if (Path.GetFileNameWithoutExtension(file).EndsWith(fileNameContains))
+                    if (endsWith)
                     {
-                        return file;
+                        if (Path.GetFileNameWithoutExtension(file).EndsWith(fileNameContains))
+                        {
+                            return file;
+                        }
+                    }
+                    else
+                    {
+                        if (Path.GetFileNameWithoutExtension(file).Contains(fileNameContains))
+                        {
+                            return file;
+                        }
                     }
                 }
-                else
-                {
-                    if (Path.GetFileNameWithoutExtension(file).Contains(fileNameContains))
-                    {
-                        return file;
-                    }
-                }
-            }
+            } catch { }
 
             return null;
         }

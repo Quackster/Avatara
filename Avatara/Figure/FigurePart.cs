@@ -43,7 +43,7 @@ namespace Avatara.Figure
                 case "he":
                     return 29;//20;
                 case "cc":
-                    return 21;
+                    return 1;
                 case "cp":
                     return 6;
                 case "hd":

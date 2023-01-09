@@ -14,24 +14,24 @@ namespace Avatara
 {
     public class FigureExtractor
     {
-        public static Dictionary<string, FigureDocument> Parts;
+        public static Dictionary<string, List<FigureDocument>> Parts;
 
-        public static void Parse()
+        public static void Parse(string folder)
         {
             if (Parts == null)
-                Parts = new Dictionary<string, FigureDocument>();
+                Parts = new Dictionary<string, List<FigureDocument>>();
 
 
-            if (Parts.Count == 0 && Directory.GetDirectories("figuredata/compiled").Length > 1)
+            if (Parts.Count == 0 && Directory.GetDirectories(folder + "/compiled").Length > 1)
             {
-                foreach (var file in Directory.GetFiles("figuredata/compiled"))
+                foreach (var file in Directory.GetFiles(folder + "/compiled"))
                 {
                     string fileName = Path.GetFileNameWithoutExtension(file);
-                    ParseXML(fileName, file);
+                    ParseXML(folder, fileName, file);
                 }
             }
 
-            foreach (var file in Directory.GetFiles("figuredata/compiled"))
+            foreach (var file in Directory.GetFiles(folder + "/compiled"))
             {
                 string fileName = Path.GetFileNameWithoutExtension(file);
 
@@ -39,14 +39,14 @@ namespace Avatara
                 //    return false;
 
 
-                if (!Directory.Exists(@"figuredata/" + fileName))
-                    Directory.CreateDirectory(@"figuredata/" + fileName);
+                if (!Directory.Exists(folder + "/" + fileName))
+                    Directory.CreateDirectory(folder + "/" + fileName);
 
                 var flash = new ShockwaveFlash(file);
                 flash.Disassemble();
 
-                if (!Directory.Exists(@"figuredata/" + fileName + "/xml"))
-                    Directory.CreateDirectory(@"figuredata/" + fileName + "/xml");
+                if (!Directory.Exists(folder + "/" + fileName + "/xml"))
+                    Directory.CreateDirectory(folder + "/" + fileName + "/xml");
 
                 var symbolClass = flash.Tags.Where(t => t.Kind == TagKind.SymbolClass).Cast<SymbolClassTag>().First();
                 var imageTags = flash.Tags.Where(t => t.Kind == TagKind.DefineBitsLossless2).Cast<DefineBitsLossless2Tag>();
@@ -58,8 +58,8 @@ namespace Avatara
                     var type = name.Split('_')[name.Split('_').Length - 1];
                     var txt = Encoding.Default.GetString(data.Data);
 
-                    if (!File.Exists(@"figuredata/" + fileName + "/xml/" + type + ".xml"))
-                        File.WriteAllText(@"figuredata/" + fileName + "/xml/" + type + ".xml", txt);
+                    if (!File.Exists(folder + "/" + fileName + "/xml/" + type + ".xml"))
+                        File.WriteAllText(folder + "/" + fileName + "/xml/" + type + ".xml", txt);
                 }
 
                 var symbolsImages = new Dictionary<int, DefineBitsLossless2Tag>();
@@ -83,16 +83,16 @@ namespace Avatara
                     var image = symbolsImages[symbolId];
                     var xmlName = name.Substring(fileName.Length + 1);
 
-                    WriteImage(image, @"figuredata/" + fileName + "/" + xmlName + ".png");
+                    WriteImage(image, folder + "/" + fileName + "/" + xmlName + ".png");
                 }
 
-                ParseXML(fileName, file);
+                ParseXML(folder, fileName, file);
             }
         }
 
-        private static void ParseXML(string fileName, string file)
+        private static void ParseXML(string folder, string fileName, string file)
         {
-            var xmlFile = FileUtil.SolveXmlFile("figuredata/" + fileName + "/xml/", "manifest");
+            var xmlFile = FileUtil.SolveXmlFile(folder + "/" + fileName + "/xml/", "manifest");
             var list = xmlFile.SelectNodes("//manifest/library/assets/asset");
 
             for (int i = 0; i < list.Count; i++)
@@ -104,13 +104,31 @@ namespace Avatara
 
                 var name = asset.Attributes.GetNamedItem("name").InnerText;
 
-                if (name.Split("_").Length < 6)
+                if (name.Split("_").Length < 3)
                     continue;
 
-                if (Parts.ContainsKey(name.Split("_")[2] + (fileName.Contains("_50_") ? "_sh" : "_h")))
+                /*if (Parts.ContainsKey(name.Split("_")[2] + (fileName.Contains("_50_") ? "_sh" : "_h")))
                     continue;
 
-                Parts.Add(name.Split("_")[2] + (fileName.Contains("_50_") ? "_sh" : "_h"), new FigureDocument(fileName, xmlFile));
+                var key = name.Split("_")[2] + (fileName.Contains("_50_") ? "_sh" : "_h");*/
+
+                var key = "";
+
+                if (fileName.StartsWith("hh_ "))
+                {
+                    key = name.Split("_")[2] + "_" + name.Split("_")[0];
+                }
+                else
+                {
+                    key = name.Split("_")[2] + (fileName.Contains("_50_") ? "_sh" : "_h");
+                }
+
+                if (!Parts.ContainsKey(key))
+                {
+                    Parts.Add(key, new List<FigureDocument>());
+                }
+
+                Parts[key].Add(new FigureDocument(fileName, xmlFile));
             }
         }
 

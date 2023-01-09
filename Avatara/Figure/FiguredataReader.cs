@@ -10,20 +10,20 @@ namespace Avatara.Figure
     public class FiguredataReader
     {
         public Dictionary<int, List<FigureColor>> FigurePalettes;
-        public Dictionary<string, FigureSetType> FigureSetTypes;
-        public Dictionary<string, FigureSet> FigureSets;
+        public Dictionary<string, List<FigureSetType>> FigureSetTypes;
+        public Dictionary<string, List<FigureSet>> FigureSets;
 
         public FiguredataReader()
         {
             this.FigurePalettes = new Dictionary<int, List<FigureColor>>();
-            this.FigureSetTypes = new Dictionary<string, FigureSetType> ();
-            this.FigureSets = new Dictionary<string, FigureSet>();
+            this.FigureSetTypes = new Dictionary<string, List<FigureSetType>> ();
+            this.FigureSets = new Dictionary<string, List<FigureSet>>();
 
         }
 
-        public void LoadFigureSets()
+        public void LoadFigureSets(string path)
         {
-            var xmlFile = FileUtil.SolveXmlFile("figuredata");
+            var xmlFile = FileUtil.SolveXmlFile(path, "figuredata");
             var list = xmlFile.SelectNodes("//sets/settype/set");
 
             for (int i = 0; i < list.Count; i++)
@@ -74,13 +74,16 @@ namespace Avatara.Figure
                     }
                 }
 
-                this.FigureSets.Add(id, figureSet);
+                if (!this.FigureSets.ContainsKey(id))
+                    this.FigureSets.Add(id, new List<FigureSet>());
+
+                this.FigureSets[id].Add(figureSet);
             }
         }
 
-        public void LoadFigurePalettes()
+        public void LoadFigurePalettes(string path)
         {
-            var xmlFile = FileUtil.SolveXmlFile("figuredata");
+            var xmlFile = FileUtil.SolveXmlFile(path, "figuredata");
             var list = xmlFile.SelectNodes("//colors/palette");
 
             for (int i = 0; i < list.Count; i++)
@@ -89,7 +92,9 @@ namespace Avatara.Figure
                 var colourList = palette.ChildNodes;
 
                 var paletteId = int.Parse(palette.Attributes.GetNamedItem("id").InnerText);
-                this.FigurePalettes.Add(paletteId, new List<FigureColor>());
+
+                if (!this.FigurePalettes.ContainsKey(paletteId))
+                    this.FigurePalettes.Add(paletteId, new List<FigureColor>());
 
                 for (int k = 0; k < colourList.Count; k++)
                 {
@@ -105,9 +110,9 @@ namespace Avatara.Figure
             }
         }
 
-        public void loadFigureSetTypes()
+        public void loadFigureSetTypes(string path)
         {
-            var xmlFile = FileUtil.SolveXmlFile("figuredata");
+            var xmlFile = FileUtil.SolveXmlFile(path, "figuredata");
             var list = xmlFile.SelectNodes("//settype");
 
             for (int i = 0; i < list.Count; i++)
@@ -115,11 +120,13 @@ namespace Avatara.Figure
                 var setType = list.Item(i);
                 String set = setType.Attributes.GetNamedItem("type").InnerText;
                 int paletteId = int.Parse(setType.Attributes.GetNamedItem("paletteid").InnerText);
-                bool isMandatory = setType.Attributes.GetNamedItem("mandatory").InnerText == "1";
+                bool isMandatory = false;// setType.Attributes.GetNamedItem("mandatory").InnerText == "1";
 
-                this.FigureSetTypes.Add(set, new FigureSetType(set, paletteId, isMandatory));
+                if (!this.FigureSetTypes.ContainsKey(set))
+                    this.FigureSetTypes.Add(set, new List<FigureSetType>());
+
+                this.FigureSetTypes[set].Add(new FigureSetType(set, paletteId, isMandatory));
             }
-
         }
     }
 }
