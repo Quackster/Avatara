@@ -99,16 +99,14 @@ namespace Avatara
             }
             */
 
-            foreach (var sets in FiguredataReader.FigureSetTypes.Values)
+            foreach (var set in FiguredataReader.FigureSetTypes.Values)
             {
-                foreach (var set in sets)
+
+                if (set.IsMandatory)
                 {
-                    if (set.IsMandatory)
+                    if (oldFigureSets.Count(x => x.Split('-')[0] == set.Set) == 0)
                     {
-                        if (oldFigureSets.Count(x => x.Split('-')[0] == set.Set) == 0)
-                        {
-                            newFigureSets.Add(set.Set + "-1-");
-                        }
+                        newFigureSets.Add(set.Set + "-1-");
                     }
                 }
             }
@@ -274,10 +272,8 @@ namespace Avatara
 
                         if (FiguredataReader.FigureSetTypes.ContainsKey(parts[0]))
                         {
-                            var figureTypeSets = FiguredataReader.FigureSetTypes[parts[0]];
+                            var figureTypeSet = FiguredataReader.FigureSetTypes[parts[0]];
 
-                            foreach (var figureTypeSet in figureTypeSets)
-                            {
                                 var palette = FiguredataReader.FigurePalettes[figureTypeSet.PaletteId];
                                 var colourData = palette.FirstOrDefault(x => x.ColourId == parts[2]);
 
@@ -286,7 +282,6 @@ namespace Avatara
                                     TintImage(image, colourData.HexColor, 255);
                                 }
                             }
-                        }
 
                     }
                 }
@@ -373,10 +368,12 @@ namespace Avatara
                     return null;
                 }
 
-                foreach (var figureSet in FiguredataReader.FigureSets.Values)
-                {
-                    var setList = figureSet.Where(x => x.Id == parts[1]);
+                //foreach (var figureSet in FiguredataReader.FigureSets.Values)
+                //{
+                    var setList = FiguredataReader.FigureSets.Values.Where(x => x.Id == parts[1]).ToList();
 
+                if (setList.Any())
+                {
                     foreach (var set in setList)
                     {
                         var partList = set.FigureParts;
@@ -391,8 +388,9 @@ namespace Avatara
                             tempQueue.Add(t);
                         }
                     }
+                
+                    //}
                 }
-
                    
             }
 
@@ -611,15 +609,7 @@ namespace Avatara
 
                     var offsets = offsetData.Attributes.GetNamedItem("value").InnerText.Split(',');
 
-                    var file = FileUtil.SolveFile("shockwave_figuredata/" + document.FileName + "/", name);
-
-                    if (file != null) 
-                        return  new AvatarAsset(this.IsSmall, Action, name, file, int.Parse(offsets[0]), int.Parse(offsets[1]), part, set, CANVAS_HEIGHT, CANVAS_WIDTH, parts);
-
-                    file = FileUtil.SolveFile("2013_figuredata/" + document.FileName + "/", name);
-
-                    if (file != null)
-                        return new AvatarAsset(this.IsSmall, Action, name, file, int.Parse(offsets[0]), int.Parse(offsets[1]), part, set, CANVAS_HEIGHT, CANVAS_WIDTH, parts);
+                    return new AvatarAsset(this.IsSmall, Action, name, FileUtil.SolveFile("figuredata/" + document.FileName + "/", name), int.Parse(offsets[0]), int.Parse(offsets[1]), part, set, CANVAS_HEIGHT, CANVAS_WIDTH, parts);
                 }
             }
 

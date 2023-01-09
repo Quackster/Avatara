@@ -10,24 +10,24 @@ namespace AvataraApp
         static void Main(string[] args)
         {
 
-                FigureExtractor.Parse("2013_figuredata");
-           // FigureExtractor.Parse("shockwave_figuredata");
+            FigureExtractor.Parse();
+            // FigureExtractor.Parse("shockwave_figuredata");
 
             var Parts = FigureExtractor.Parts;
 
-                var figuredataReader = new FiguredataReader();
-                figuredataReader.LoadFigurePalettes("2013_figuredata");
-                figuredataReader.loadFigureSetTypes("2013_figuredata");
-                figuredataReader.LoadFigureSets("2013_figuredata");
+            var figuredataReader = new FiguredataReader();
+            figuredataReader.LoadFigurePalettes();
+            figuredataReader.loadFigureSetTypes();
+            figuredataReader.LoadFigureSets();
 
             /*
             figuredataReader.LoadFigurePalettes("shockwave_figuredata");
             figuredataReader.loadFigureSetTypes("shockwave_figuredata");
             figuredataReader.LoadFigureSets("shockwave_figuredata");*/
 
-
-            var avatar = new Avatar("cc-260-62.lg-270-64.hr-100-.ch-210-66.ha-3139-82.hd-209-1.sh-300-64", "b", 2, 2, figuredataReader, cropImage: true);
-                File.WriteAllBytes("figure-1.png", avatar.Run());
+            // cc-260-62.lg-270-64.hr-100-.ch-210-66.ha-3139-82.hd-209-1.sh-300-64
+            var avatar = new Avatar("hd-180-1.ch-260-62.lg-270-64.sh-300-64.ha-1008-62.ea-1402-62.ca-1806-73", "b", 2, 2, figuredataReader, cropImage: false);
+            File.WriteAllBytes("figure-1.png", avatar.Run());
 
             /*
                 avatar = new Avatar("hd-206-7", "b", 2, 2, figuredataReader, headOnly: true);
