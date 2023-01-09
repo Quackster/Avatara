@@ -22,21 +22,20 @@ namespace Avatara
             if (Parts == null)
                 Parts = new Dictionary<string, string>();
 
+            if (!Directory.Exists(@"figuredata/xml"))
+                Directory.CreateDirectory(@"figuredata/xml");
+
+            if (!Directory.Exists(@"figuredata/images"))
+                Directory.CreateDirectory(@"figuredata/images");
 
             if (Parts.Count == 0 && Directory.GetFiles("figuredata/xml").Length > 1)
             {
                 foreach (var manfiest in Directory.GetFiles("figuredata/xml"))
                 {
                     ParseXML(manfiest);
+                    return;
                 }
             }
-
-            if (!Directory.Exists(@"figuredata/xml"))
-                Directory.CreateDirectory(@"figuredata/xml");
-
-
-            if (!Directory.Exists(@"figuredata/images"))
-                Directory.CreateDirectory(@"figuredata/images");
 
             foreach (var file in Directory.GetFiles("figuredata/compiled"))
             {
