@@ -276,14 +276,14 @@ namespace Avatara
                         {
                             var figureTypeSet = FiguredataReader.FigureSetTypes[parts[0]];
 
-                                var palette = FiguredataReader.FigurePalettes[figureTypeSet.PaletteId];
-                                var colourData = palette.FirstOrDefault(x => x.ColourId == parts[2]);
+                            var palette = FiguredataReader.FigurePalettes[figureTypeSet.PaletteId];
+                            var colourData = palette.FirstOrDefault(x => x.ColourId == parts[2]);
 
-                                if (colourData != null)
-                                {
-                                    TintImage(image, colourData.HexColor, 255);
-                                }
+                            if (colourData != null)
+                            {
+                                TintImage(image, colourData.HexColor, 255);
                             }
+                        }
 
                     }
                 }
@@ -298,9 +298,7 @@ namespace Avatara
                 if (this.IsHead(asset.Part.Type))
                 {
                     var point = new SixLabors.ImageSharp.Point(faceCanvas.Width - asset.ImageX, faceCanvas.Height - asset.ImageY);
-
-                    if (CropImage)
-                        point = MutatePoint(point, faceCanvas);
+                    point = MutatePoint(point, faceCanvas);
 
                     faceCanvas.Mutate(ctx =>
                     {
@@ -312,9 +310,7 @@ namespace Avatara
                     if (!asset.IsDrinkCanvas)
                     {
                         var point = new SixLabors.ImageSharp.Point(bodyCanvas.Width - asset.ImageX, bodyCanvas.Height - asset.ImageY);
-
-                        if (CropImage)
-                            point = MutatePoint(point, bodyCanvas);
+                        point = MutatePoint(point, bodyCanvas);
 
                         bodyCanvas.Mutate(ctx =>
                         {
@@ -324,9 +320,7 @@ namespace Avatara
                     else
                     {
                         var point = new SixLabors.ImageSharp.Point(bodyCanvas.Width - asset.ImageX, bodyCanvas.Height - asset.ImageY);
-
-                        if (CropImage)
-                            point = MutatePoint(point, bodyCanvas);
+                        point = MutatePoint(point, bodyCanvas);
 
                         drinkCanvas.Mutate(ctx =>
                         {
@@ -338,14 +332,13 @@ namespace Avatara
             catch { }
         }
 
+        // Apply proper offsets to image... gotta match 1:1 to habbo.com imaging >:)
         private SixLabors.ImageSharp.Point MutatePoint(SixLabors.ImageSharp.Point point, Image<Rgba32> canvas)
         {
-            /*
-            point.X -= canvas.Height / 2;
-            point.Y += canvas.Width / 2;
-            */
+            var x = point.X + 1;
+            var y = point.Y + 2;
 
-            return point;
+            return new SixLabors.ImageSharp.Point(x, y);
         }
 
         private List<AvatarAsset> BuildDrawQueue()
@@ -372,7 +365,7 @@ namespace Avatara
 
                 //foreach (var figureSet in FiguredataReader.FigureSets.Values)
                 //{
-                    var setList = FiguredataReader.FigureSets.Values.Where(x => x.Id == parts[1]).ToList();
+                var setList = FiguredataReader.FigureSets.Values.Where(x => x.Id == parts[1]).ToList();
 
                 if (setList.Any())
                 {
@@ -390,10 +383,10 @@ namespace Avatara
                             tempQueue.Add(t);
                         }
                     }
-                
+
                     //}
                 }
-                   
+
             }
 
             // Find maxiumum head render order (used for drinks)
@@ -452,33 +445,33 @@ namespace Avatara
 
             //foreach (var document in documents)
             //{
-                //if (document == null)
-                //    return null;
+            //if (document == null)
+            //    return null;
 
-                int direction = BodyDirection;
+            int direction = BodyDirection;
 
-                if (BodyDirection == 4)
-                    direction = 2;
+            if (BodyDirection == 4)
+                direction = 2;
 
-                if (BodyDirection == 6)
-                    direction = 0;
+            if (BodyDirection == 6)
+                direction = 0;
 
-                if (BodyDirection == 5)
-                    direction = 1;
+            if (BodyDirection == 5)
+                direction = 1;
 
-                var part = new FigurePart("0", "ri", false, 0);
-                var set = new FigureSet("ri", "", "", false, false, false);
+            var part = new FigurePart("0", "ri", false, 0);
+            var set = new FigureSet("ri", "", "", false, false, false);
 
-                var asset = LocateAsset((this.IsSmall ? "sh" : "h") + "_" + Action + "_ri_" + carryId + "_" + direction + "_0", null, part, set);
+            var asset = LocateAsset((this.IsSmall ? "sh" : "h") + "_" + Action + "_ri_" + carryId + "_" + direction + "_0", null, part, set);
 
-                if (asset == null)
-                    asset = LocateAsset((this.IsSmall ? "sh" : "h") + "_crr_ri_" + carryId + "_" + direction + "_0", null, part, set);
+            if (asset == null)
+                asset = LocateAsset((this.IsSmall ? "sh" : "h") + "_crr_ri_" + carryId + "_" + direction + "_0", null, part, set);
 
-                if (asset == null)
-                    asset = LocateAsset((this.IsSmall ? "sh" : "h") + "_std_ri_" + carryId + "_0_0", null, part, set);
+            if (asset == null)
+                asset = LocateAsset((this.IsSmall ? "sh" : "h") + "_std_ri_" + carryId + "_0_0", null, part, set);
 
-                if (asset != null)
-                    return asset;
+            if (asset != null)
+                return asset;
             //}
 
             return null;
@@ -715,7 +708,7 @@ namespace Avatara
 
             if (file == null) return null;
 
-            var offsets = FigureExtractor.Parts.ContainsKey(assetName) ?  FigureExtractor.Parts[assetName] : null;
+            var offsets = FigureExtractor.Parts.ContainsKey(assetName) ? FigureExtractor.Parts[assetName] : null;
 
             if (offsets == null) return null;
 
