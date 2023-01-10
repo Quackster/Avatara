@@ -31,9 +31,11 @@ Output should be similar to below:
 
 ![image](https://user-images.githubusercontent.com/1328523/211535708-8fb6e931-4087-4d54-aae0-90a7e629bad6.png)
 
-## How do I use it for my CMS?
+## How do I use it for my site?
 
-Then proxy it through PHP.
+You can proxy it.
+
+An example in PHP:
 
 ```php
 <?php
