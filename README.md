@@ -7,6 +7,14 @@ Thanks to Webbanditten for solving some rendering problems.
 
 Compile the AvataraWebApp to the operating system of your choice (it runs on .NET 5 and works on Linux).
 
+Extract *figuredata-shockwave.zip* if you plan to use 2012-2007 era clothing. 
+
+Extract *figuredata-2013.zip* if you plan to use 2013 era clothing.
+
+You can add your own SWFs by simply replacing the SWFS in /figuredata/compiled/ and also replace the figuredata.xml.
+
+If the **xml** and **images** folder doesn't exist, Avatara will automatically create the folders and extract the SWFs on first run, so that each subsequent run is quicker.
+
 Run the app.
 
 (On Linux for example)
