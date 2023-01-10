@@ -25,6 +25,12 @@ Run the app.
 
 ``AvataraWebApp.exe --urls=http://*:8090/``
 
+Then it should be accessible via http://localhost:8080/habbo-imaging/avatarimage?figure=hd-180-1.hr-100-61.ch-210-66.lg-270-82.sh-290-80 - giving you this image.
+
+![image](https://user-images.githubusercontent.com/1328523/211535708-8fb6e931-4087-4d54-aae0-90a7e629bad6.png)
+
+## How do I use it for my CMS?
+
 Then proxy it through PHP.
 
 ```php
