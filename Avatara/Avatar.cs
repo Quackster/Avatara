@@ -2,11 +2,14 @@
 using Avatara.Figure;
 using Avatara.Util;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Gif;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Reflection.Metadata;
 using System.Xml.Linq;
@@ -198,6 +201,8 @@ namespace Avatara
                 finalCanvas = this.FaceCanvas;
             }
 
+            return RenderImage(finalCanvas);
+            /*
             using Bitmap tempBitmap = finalCanvas.ToBitmap();
 
             if (!RenderEntireFigure)
@@ -211,9 +216,52 @@ namespace Avatara
             {
                 // Crop the image
                 return RenderImage(tempBitmap);
-            }
+            }*/
         }
 
+        private byte[] RenderImage(Image<Rgba32> croppedBitmap)
+        {
+            Image<Rgba32> bitmap = null;
+
+            if (Size == "l")
+            {
+                using (var image = croppedBitmap)
+                {
+                    var resizeOptions = new ResizeOptions();
+                    resizeOptions.Size = new SixLabors.ImageSharp.Size(
+                       image.Width * 2, image.Height * 2
+                    );
+
+                    resizeOptions.Sampler = KnownResamplers.NearestNeighbor;
+                    image.Mutate(x => x.Resize(resizeOptions));
+
+                    bitmap = image;
+                }
+            }
+            else
+            {
+                bitmap = croppedBitmap;
+            }
+
+            if (CropImage)
+            {
+                // Crop the image
+                /*using (Image<Rgba32> b = ImageUtil.TrimBitmap(bitmap))
+                {
+                    return b.ToByteArray();
+                }*/
+            }
+
+            using (var ms = new MemoryStream())
+            {
+                bitmap.Save(ms, new SixLabors.ImageSharp.Formats.Png.PngEncoder());
+                return ms.ToArray();
+            }
+
+            // return bitmap.ToByteArray();
+        }
+
+        /*
         private byte[] RenderImage(Bitmap croppedBitmap)
         {
             Bitmap bitmap = null;
@@ -248,7 +296,7 @@ namespace Avatara
             }
 
             return bitmap.ToByteArray();
-        }
+        }*/
 
         private void DrawAsset(List<AvatarAsset> buildQueue, Image<Rgba32> bodyCanvas, Image<Rgba32> faceCanvas, Image<Rgba32> drinkCanvas, AvatarAsset asset)
         {
@@ -773,23 +821,12 @@ namespace Avatara
             }
         }
 
-        public static Rgba32 HexToColor(string hexString)
+        public static Rgba32 HexToColor(string hexColourCode)
         {
-            if (hexString.ToLower() == "transparent")
-            {
-                return SixLabors.ImageSharp.Color.Transparent;
-            }
-
-            try
-            {
-                var drawingColor = System.Drawing.ColorTranslator.FromHtml("#" + hexString);
-                return SixLabors.ImageSharp.Color.FromRgb(drawingColor.R, drawingColor.G, drawingColor.B);
-            }
-            catch (Exception)
-            {
-            }
-
-            return SixLabors.ImageSharp.Color.FromRgb(254, 254, 254);
+            return SixLabors.ImageSharp.Color.FromRgb(
+                byte.Parse(hexColourCode.Substring(0, 2), NumberStyles.HexNumber),
+                byte.Parse(hexColourCode.Substring(2, 2), NumberStyles.HexNumber),
+                byte.Parse(hexColourCode.Substring(4, 2), NumberStyles.HexNumber));
         }
 
 
