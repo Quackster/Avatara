@@ -823,6 +823,11 @@ namespace Avatara
 
         public static Rgba32 HexToColor(string hexColourCode)
         {
+            if (hexColourCode == "transparent")
+                return SixLabors.ImageSharp.Color.Transparent.ToPixel<Rgba32>();
+
+            hexColourCode = hexColourCode.Replace("#", "").ToLower();
+
             return SixLabors.ImageSharp.Color.FromRgb(
                 byte.Parse(hexColourCode.Substring(0, 2), NumberStyles.HexNumber),
                 byte.Parse(hexColourCode.Substring(2, 2), NumberStyles.HexNumber),
