@@ -756,7 +756,7 @@ namespace Avatara
 
             if (offsets == null) return null;
 
-            var file = FileUtil.SolveFile("figuredata/images/", assetName + ".png", endsWith: false, equals: true);
+            var file = FileUtil.SolveFile("figuredata/images/", assetName, endsWith: false, equals: true);
 
             if (file == null) return null;
 
