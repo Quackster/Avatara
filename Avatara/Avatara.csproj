@@ -5,11 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="DotNetZip" Version="1.16.0" />
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.2" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Flazzy\Flazzy\Flazzy.csproj" />
+    <Folder Include="NewFolder\" />
   </ItemGroup>
 
 </Project>
