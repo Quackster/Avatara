@@ -752,13 +752,13 @@ namespace Avatara
 
         private AvatarAsset LocateAsset(string assetName, string[] parts, FigurePart part, FigureSet set)
         {
-            var file = FileUtil.SolveFile("figuredata/images/", assetName);
-
-            if (file == null) return null;
-
             var offsets = FigureExtractor.Parts.ContainsKey(assetName) ? FigureExtractor.Parts[assetName] : null;
 
             if (offsets == null) return null;
+
+            var file = FileUtil.SolveFile("figuredata/images/", assetName + ".png", endsWith: false, equals: true);
+
+            if (file == null) return null;
 
             return new AvatarAsset(this.IsSmall, Action, assetName, file, int.Parse(offsets.Split(',')[0]), int.Parse(offsets.Split(',')[1]), part, set, CANVAS_HEIGHT, CANVAS_WIDTH, parts);
         }
