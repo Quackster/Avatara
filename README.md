@@ -5,7 +5,7 @@ Thanks to Webbanditten for solving some rendering problems.
 
 ## How to Use
 
-Compile the AvataraWebApp to the operating system of your choice (it runs on .NET 5+ and works on Linux).
+"Avatara" on its own, is a figure library, it is not a web server!
 
 Extract *figuredata-shockwave.zip* if you plan to use 2012-2007 era clothing. 
 
