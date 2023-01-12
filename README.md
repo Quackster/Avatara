@@ -35,7 +35,8 @@ if (figuredataReader == null)
 // ...when rendering...
 
 var avatar = new Avatar(figure, size, bodyDirection, headDirection, figuredataReader, action: action, gesture: gesture, headOnly: headOnly, frame: frame, carryDrink: carryDrink, cropImage: cropImage);
-var figureData = avatar.Run();```
+var figureData = avatar.Run();
+```
 
 ## As a web server?
 
