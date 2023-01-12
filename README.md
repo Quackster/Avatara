@@ -36,3 +36,7 @@ if (figuredataReader == null)
 
 var avatar = new Avatar(figure, size, bodyDirection, headDirection, figuredataReader, action: action, gesture: gesture, headOnly: headOnly, frame: frame, carryDrink: carryDrink, cropImage: cropImage);
 var figureData = avatar.Run();```
+
+## As a web server?
+
+See: https://github.com/Quackster/Helios.Imager
