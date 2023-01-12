@@ -5,7 +5,7 @@ VisualStudioVersion = 17.4.33122.133
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avatara", "Avatara\Avatara.csproj", "{20230C80-794F-487C-9B7C-79DCA50CA2B5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Flazzy", "Flazzy\Flazzy\Flazzy.csproj", "{19E2AC4C-677E-4F3C-BA65-C2DF468DB3BF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Flazzy", "..\Flazzy\Flazzy\Flazzy.csproj", "{BFE74A3A-2C31-44BF-B910-A2C869317325}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,10 @@ Global
 		{20230C80-794F-487C-9B7C-79DCA50CA2B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{20230C80-794F-487C-9B7C-79DCA50CA2B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{20230C80-794F-487C-9B7C-79DCA50CA2B5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{19E2AC4C-677E-4F3C-BA65-C2DF468DB3BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{19E2AC4C-677E-4F3C-BA65-C2DF468DB3BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{19E2AC4C-677E-4F3C-BA65-C2DF468DB3BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{19E2AC4C-677E-4F3C-BA65-C2DF468DB3BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BFE74A3A-2C31-44BF-B910-A2C869317325}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BFE74A3A-2C31-44BF-B910-A2C869317325}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BFE74A3A-2C31-44BF-B910-A2C869317325}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BFE74A3A-2C31-44BF-B910-A2C869317325}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
