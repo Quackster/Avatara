@@ -40,4 +40,4 @@ var figureData = avatar.Run();
 
 ## As a web server?
 
-See: https://github.com/Quackster/Helios.Imager
+See: https://github.com/Quackster/Minerva
