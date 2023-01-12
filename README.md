@@ -1,8 +1,6 @@
 # Avatara
 Habbo Hotel figure avatar imager for 2009 era figure codes.
 
-Thanks to Webbanditten for solving some rendering problems.
-
 ## How to Use
 
 "Avatara" on its own, is a figure library, it is not a web server!
@@ -41,3 +39,10 @@ var figureData = avatar.Run();
 ## As a web server?
 
 See: https://github.com/Quackster/Minerva
+
+## Credits
+
+Thanks to ArachisH for the Flazzy project. 
+Forked: https://github.com/Quackster/Flazzy
+
+Thanks to Webbanditten for solving some rendering problems.
