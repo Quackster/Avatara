@@ -9,6 +9,12 @@ namespace Avatara.Figure
 {
     public class FiguredataReader
     {
+        #region Fields
+
+        public static readonly FiguredataReader Instance = new FiguredataReader();
+
+        #endregion
+
         public Dictionary<int, List<FigureColor>> FigurePalettes;
         public Dictionary<string, FigureSetType> FigureSetTypes;
         public Dictionary<string, FigureSet> FigureSets;
@@ -19,6 +25,13 @@ namespace Avatara.Figure
             this.FigureSetTypes = new Dictionary<string, FigureSetType> ();
             this.FigureSets = new Dictionary<string, FigureSet>();
 
+        }
+
+        public void Load()
+        {
+            this.LoadFigureSets();
+            this.LoadFigureSetTypes();
+            this.LoadFigurePalettes();
         }
 
         public void LoadFigureSets()
@@ -105,7 +118,7 @@ namespace Avatara.Figure
             }
         }
 
-        public void loadFigureSetTypes()
+        public void LoadFigureSetTypes()
         {
             var xmlFile = FileUtil.SolveXmlFile("figuredata");
             var list = xmlFile.SelectNodes("//settype");

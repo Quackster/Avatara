@@ -14,26 +14,30 @@ You can add your own SWFs by simply replacing the SWFS in /figuredata/compiled/ 
 If the **xml** and **images** folder doesn't exist, Avatara will automatically create the folders and extract the SWFs on first run, so that each subsequent run is quicker.
 
 ```c
-// ... store it as a field
 
-private FiguredataReader? figuredataReader;
+// ... only need to be called once
 
-// ... in the constructor somewhere
+FiguredataReader.Instance.Load();
+FlashExtractor.Instance.Load();
 
-if (figuredataReader == null)
-{
-    FigureExtractor.Parse();
+// ... the imager arguments...
 
-    figuredataReader = new FiguredataReader();
-    figuredataReader.LoadFigurePalettes();
-    figuredataReader.loadFigureSetTypes();
-    figuredataReader.LoadFigureSets();
-}
+string? figure = "hd-180-1.hr-100-61.ch-210-66.lg-270-82.sh-290-80";
+string size = "b";
+int bodyDirection = 2;
+int headDirection = 2;
+string action = "std";
+string gesture = "sml";
+bool headOnly = false;
+int frame = 1;
+int carryDrink = -1;
+bool cropImage = false;
 
-// ...when rendering...
+// .. generating the PNG output
 
-var avatar = new Avatar(figure, size, bodyDirection, headDirection, figuredataReader, action: action, gesture: gesture, headOnly: headOnly, frame: frame, carryDrink: carryDrink, cropImage: cropImage);
-var figureData = avatar.Run();
+var avatar = new Avatar(FiguredataReader.Instance, figure, size, bodyDirection, headDirection, action: action, gesture: gesture, headOnly: headOnly, frame: frame, carryDrink: carryDrink, cropImage: cropImage);
+File.WriteAllBytes("figure.png", avatar.Run());
+
 ```
 
 ## As a web server?

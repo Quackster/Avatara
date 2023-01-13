@@ -38,7 +38,7 @@ namespace Avatara
         public bool RenderEntireFigure;
         public bool CropImage = false;
 
-        public Avatar(string figure, string size, int bodyDirection, int headDirection, FiguredataReader figuredataReader, string action = "std", string gesture = "std", bool headOnly = false, int frame = 1, int carryDrink = 0, bool cropImage = false)
+        public Avatar(FiguredataReader figuredataReader, string figure, string size, int bodyDirection, int headDirection, string action = "std", string gesture = "std", bool headOnly = false, int frame = 1, int carryDrink = 0, bool cropImage = false)
         {
             Figure = figure;
             Size = size.ToLower();
@@ -752,7 +752,7 @@ namespace Avatara
 
         private AvatarAsset LocateAsset(string assetName, string[] parts, FigurePart part, FigureSet set)
         {
-            var offsets = FigureExtractor.Parts.ContainsKey(assetName) ? FigureExtractor.Parts[assetName] : null;
+            var offsets = FlashExtractor.Instance.Parts.ContainsKey(assetName) ? FlashExtractor.Instance.Parts[assetName] : null;
 
             if (offsets == null) return null;
 

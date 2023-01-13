@@ -12,13 +12,21 @@ using System.Text;
 
 namespace Avatara
 {
-    public class FigureExtractor
+    public class FlashExtractor
     {
-        // public static Dictionary<string, FigureAssetEntry> Parts;
-        public static Dictionary<string, string> Parts;
+        #region Fields
 
-        public static void Parse()
+        public static readonly FlashExtractor Instance = new FlashExtractor();
+
+        #endregion
+
+        // public static Dictionary<string, FigureAssetEntry> Parts;
+        public Dictionary<string, string> Parts;
+
+        public void Load()
         {
+            Parts = new Dictionary<string, string>();
+
             if (Parts == null)
                 Parts = new Dictionary<string, string>();
 
@@ -28,62 +36,57 @@ namespace Avatara
             if (!Directory.Exists(@"figuredata/images"))
                 Directory.CreateDirectory(@"figuredata/images");
 
-            if (Parts.Count == 0 && Directory.GetFiles("figuredata/xml").Length > 1)
+            if (!Directory.GetFiles("figuredata/xml").Any() || 
+                !Directory.GetFiles("figuredata/images").Any())
             {
-                foreach (var manfiest in Directory.GetFiles("figuredata/xml"))
+                foreach (var file in Directory.GetFiles("figuredata/compiled"))
                 {
-                    ParseXML(manfiest);
-                    return;
-                }
-            }
+                    string fileName = Path.GetFileNameWithoutExtension(file);
 
-            foreach (var file in Directory.GetFiles("figuredata/compiled"))
-            {
-                string fileName = Path.GetFileNameWithoutExtension(file);
-
-                //if (Directory.Exists(@"furni_export\" + fileName))
-                //    return false;
+                    //if (Directory.Exists(@"furni_export\" + fileName))
+                    //    return false;
 
 
-                var flash = new ShockwaveFlash(file);
-                flash.Disassemble();
+                    var flash = new ShockwaveFlash(file);
+                    flash.Disassemble();
 
-                var symbolClass = flash.Tags.Where(t => t.Kind == TagKind.SymbolClass).Cast<SymbolClassTag>().First();
-                var imageTags = flash.Tags.Where(t => t.Kind == TagKind.DefineBitsLossless2).Cast<DefineBitsLossless2Tag>();
-                var dataTags = flash.Tags.Where(t => t.Kind == TagKind.DefineBinaryData).Cast<DefineBinaryDataTag>();
+                    var symbolClass = flash.Tags.Where(t => t.Kind == TagKind.SymbolClass).Cast<SymbolClassTag>().First();
+                    var imageTags = flash.Tags.Where(t => t.Kind == TagKind.DefineBitsLossless2).Cast<DefineBitsLossless2Tag>();
+                    var dataTags = flash.Tags.Where(t => t.Kind == TagKind.DefineBinaryData).Cast<DefineBinaryDataTag>();
 
-                foreach (var data in dataTags)
-                {
-                    var name = symbolClass.Names[symbolClass.Ids.IndexOf(data.Id)];
-                    var type = name.Split('_')[name.Split('_').Length - 1];
-                    var txt = Encoding.Default.GetString(data.Data);
+                    foreach (var data in dataTags)
+                    {
+                        var name = symbolClass.Names[symbolClass.Ids.IndexOf(data.Id)];
+                        var type = name.Split('_')[name.Split('_').Length - 1];
+                        var txt = Encoding.Default.GetString(data.Data);
 
-                    if (!File.Exists(@"figuredata/xml/" + fileName + ".xml"))
-                        File.WriteAllText(@"figuredata/xml/" + fileName + ".xml", txt);
-                }
+                        if (!File.Exists(@"figuredata/xml/" + fileName + ".xml"))
+                            File.WriteAllText(@"figuredata/xml/" + fileName + ".xml", txt);
+                    }
 
-                var symbolsImages = new Dictionary<int, DefineBitsLossless2Tag>();
+                    var symbolsImages = new Dictionary<int, DefineBitsLossless2Tag>();
 
-                foreach (var image in imageTags)
-                {
-                    symbolsImages[image.Id] = image;
-                }
+                    foreach (var image in imageTags)
+                    {
+                        symbolsImages[image.Id] = image;
+                    }
 
-                foreach (var symbol in symbolClass.Names)
-                {
-                    //Console.WriteLine(symbolClass.Names.IndexOf(symbol) + " / " + symbol + " / " + symbolClass.Ids[symbolClass.Names.IndexOf(symbol)]);
+                    foreach (var symbol in symbolClass.Names)
+                    {
+                        //Console.WriteLine(symbolClass.Names.IndexOf(symbol) + " / " + symbol + " / " + symbolClass.Ids[symbolClass.Names.IndexOf(symbol)]);
 
-                    int symbolId = symbolClass.Ids[symbolClass.Names.IndexOf(symbol)];
+                        int symbolId = symbolClass.Ids[symbolClass.Names.IndexOf(symbol)];
 
-                    if (!symbolsImages.ContainsKey(symbolId))
-                        continue;
+                        if (!symbolsImages.ContainsKey(symbolId))
+                            continue;
 
-                    string name = symbol;
+                        string name = symbol;
 
-                    var image = symbolsImages[symbolId];
-                    var xmlName = name.Substring(fileName.Length + 1);
+                        var image = symbolsImages[symbolId];
+                        var xmlName = name.Substring(fileName.Length + 1);
 
-                    WriteImage(image, @"figuredata/images/" + xmlName + ".png");
+                        WriteImage(image, @"figuredata/images/" + xmlName + ".png");
+                    }
                 }
             }
 
@@ -93,7 +96,7 @@ namespace Avatara
             }
         }
 
-        private static void ParseXML(string fileName)
+        private void ParseXML(string fileName)
         {
             var xmlFile = FileUtil.ReadeXmlFile(fileName);
             var list = xmlFile.SelectNodes("//manifest/library/assets/asset");
@@ -139,7 +142,7 @@ namespace Avatara
             }
         }
 
-        private static void WriteImage(DefineBitsLossless2Tag image, string path)
+        private void WriteImage(DefineBitsLossless2Tag image, string path)
         {
             if (File.Exists(path))
                 return;
