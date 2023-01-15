@@ -5,8 +5,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="figuredata\**" />
     <Compile Remove="NewFolder\**" />
+    <EmbeddedResource Remove="figuredata\**" />
     <EmbeddedResource Remove="NewFolder\**" />
+    <None Remove="figuredata\**" />
     <None Remove="NewFolder\**" />
   </ItemGroup>
 

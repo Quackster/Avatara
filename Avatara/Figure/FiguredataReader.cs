@@ -19,11 +19,14 @@ namespace Avatara.Figure
         public Dictionary<string, FigureSetType> FigureSetTypes;
         public Dictionary<string, FigureSet> FigureSets;
 
+        public bool? MandatoryGenderFlag { get; }
+
         public FiguredataReader()
         {
             this.FigurePalettes = new Dictionary<int, List<FigureColor>>();
-            this.FigureSetTypes = new Dictionary<string, FigureSetType> ();
+            this.FigureSetTypes = new Dictionary<string, FigureSetType>();
             this.FigureSets = new Dictionary<string, FigureSet>();
+            this.MandatoryGenderFlag = null;
 
         }
 
@@ -80,7 +83,8 @@ namespace Avatara.Figure
 
                     var hiddenLayerList = part.ChildNodes;
 
-                    for (int k = 0; k < hiddenLayerList.Count; k++) {
+                    for (int k = 0; k < hiddenLayerList.Count; k++)
+                    {
 
                         var hiddenLayer = hiddenLayerList.Item(k);
                         figureSet.HiddenLayers.Add(hiddenLayer.Attributes.GetNamedItem("parttype").InnerText);
@@ -128,11 +132,39 @@ namespace Avatara.Figure
                 var setType = list.Item(i);
                 String set = setType.Attributes.GetNamedItem("type").InnerText;
                 int paletteId = int.Parse(setType.Attributes.GetNamedItem("paletteid").InnerText);
-                bool isMandatory = setType.Attributes.GetNamedItem("mandatory")?.InnerText == "1";
 
-                this.FigureSetTypes.Add(set, new FigureSetType(set, paletteId, isMandatory));
+
+                bool isMandatoryFlag = setType.Attributes.GetNamedItem("mandatory") != null;
+
+                bool? isMandatory = null;
+                bool? isMaleMandatoryNonHC = null;
+                bool? isMaleMandatoryHC = null;
+                bool? isFemaleMandatoryNonHC = null;
+                bool? isFemaleMandatoryHC = null;
+
+                if (isMandatoryFlag)
+                {
+                    isMandatory = setType.Attributes.GetNamedItem("mandatory") != null && setType.Attributes.GetNamedItem("mandatory")?.InnerText == "1";
+
+                    if (isMandatory != null)
+                    {
+                        isMaleMandatoryHC = isMandatory;
+                        isMaleMandatoryNonHC = isMandatory;
+                        isFemaleMandatoryHC = isMandatory;
+                        isFemaleMandatoryNonHC = isMandatory;
+                    }
+                }
+                else
+                {
+                    isMaleMandatoryNonHC = setType.Attributes.GetNamedItem("mand_m_0") != null && setType.Attributes.GetNamedItem("mand_m_0")?.InnerText == "1";
+                    isMaleMandatoryHC = setType.Attributes.GetNamedItem("mand_m_1") != null && setType.Attributes.GetNamedItem("mand_m_1")?.InnerText == "1";
+
+                    isFemaleMandatoryNonHC = setType.Attributes.GetNamedItem("mand_f_0") != null && setType.Attributes.GetNamedItem("mand_f_0")?.InnerText == "1";
+                    isFemaleMandatoryHC = setType.Attributes.GetNamedItem("mand_f_1") != null && setType.Attributes.GetNamedItem("mand_f_1")?.InnerText == "1";
+                }
+
+                this.FigureSetTypes.Add(set, new FigureSetType(set, paletteId, isMandatory, isMaleMandatoryNonHC, isMaleMandatoryHC, isFemaleMandatoryNonHC, isFemaleMandatoryHC));
             }
-
         }
     }
 }

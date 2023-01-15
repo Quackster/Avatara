@@ -88,21 +88,20 @@ namespace Avatara
                 this.CarryDrink = 0;
             }
 
-            TryNudify(this.Figure);
+            // TryNudify(this.Figure);
         }
 
+        /*
         private void TryNudify(string figure)
         {
             var oldFigureSets = figure.Split(".");
             var newFigureSets = new List<string>();
 
-            /*
-            foreach (string data in figure.Split("."))
-            {
-                string[] parts = data.Split("-");
-                Console.WriteLine(parts[0] + ": { set: '" + parts[1] + "', color: '" + (parts.Length > 2 ? parts[2] : "") + "' },");
-            }
-            */
+            //foreach (string data in figure.split("."))
+            //{
+            //    string[] parts = data.split("-");
+            //    console.writeline(parts[0] + ": { set: '" + parts[1] + "', color: '" + (parts.length > 2 ? parts[2] : "") + "' },");
+            //}
 
             foreach (var set in FiguredataReader.FigureSetTypes.Values)
             {
@@ -127,7 +126,7 @@ namespace Avatara
             }
 
 
-        }
+        }*/
 
         public byte[] Run()
         {
