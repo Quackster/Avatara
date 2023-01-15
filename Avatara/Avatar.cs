@@ -396,7 +396,7 @@ namespace Avatara
             foreach (string data in Figure.Split("."))
             {
                 string[] parts = data.Split("-");
-                figureData.Add(parts[0], string.Join("-", parts));
+                figureData[parts[0]] = string.Join("-", parts);
             }
 
             var assetLast = new List<AvatarAsset>();

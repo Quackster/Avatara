@@ -48,7 +48,7 @@ namespace Avatara.Figure
                 String setType = set.ParentNode.Attributes.GetNamedItem("type").InnerText;
                 String id = set.Attributes.GetNamedItem("id").InnerText;
                 String gender = set.Attributes.GetNamedItem("gender").InnerText;
-                bool club = set.Attributes.GetNamedItem("club").InnerText == "1";
+                bool club = set.Attributes.GetNamedItem("club").InnerText == "1" || set.Attributes.GetNamedItem("club").InnerText == "2";
                 bool colourable = set.Attributes.GetNamedItem("colorable").InnerText == "1";
                 bool selectable = set.Attributes.GetNamedItem("selectable").InnerText == "1";
 
@@ -114,7 +114,7 @@ namespace Avatara.Figure
 
                     String colourId = colour.Attributes.GetNamedItem("id").InnerText;
                     String index = colour.Attributes.GetNamedItem("index").InnerText;
-                    bool isClubRequired = colour.Attributes.GetNamedItem("club").InnerText == "1";
+                    bool isClubRequired = colour.Attributes.GetNamedItem("club").InnerText == "1" || colour.Attributes.GetNamedItem("club").InnerText == "2";
                     bool isSelectable = colour.Attributes.GetNamedItem("selectable").InnerText == "1";
 
                     this.FigurePalettes[paletteId].Add(new FigureColor(colourId, index, isClubRequired, isSelectable, colour.InnerText));
