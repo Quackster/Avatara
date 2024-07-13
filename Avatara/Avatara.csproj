@@ -7,6 +7,18 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <Major>1</Major>
+    <Minor>1</Minor>
+    <Build>0</Build>
+    <Revision>$([System.DateTime]::UtcNow.ToString("MddHHmm"))</Revision>
+
+    <Version>$(Major).$(Minor).$(Build).$(Revision)</Version>
+    <AssemblyVersion>$(Major).$(Minor).$(Build)</AssemblyVersion>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+
   <ItemGroup>
     <Compile Remove="figuredata\**" />
     <Compile Remove="NewFolder\**" />

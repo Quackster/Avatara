@@ -220,8 +220,6 @@ namespace Avatara
 
         private byte[] RenderImage(Image<Rgba32> croppedBitmap)
         {
-            Image<Rgba32> bitmap = null;
-
             if (Size == "l")
             {
                 using (var image = croppedBitmap)
@@ -234,30 +232,24 @@ namespace Avatara
                     resizeOptions.Sampler = KnownResamplers.NearestNeighbor;
                     image.Mutate(x => x.Resize(resizeOptions));
 
-                    bitmap = image;
+                    return ToBytes(image);
                 }
             }
             else
             {
-                bitmap = croppedBitmap;
-            }
 
-            if (CropImage)
-            {
-                // Crop the image
-                /*using (Image<Rgba32> b = ImageUtil.TrimBitmap(bitmap))
-                {
-                    return b.ToByteArray();
-                }*/
+                return ToBytes(croppedBitmap);
             }
+            // return bitmap.ToByteArray();
+        }
 
+        private static byte[] ToBytes(Image<Rgba32> bitmap)
+        {
             using (var ms = new MemoryStream())
             {
                 bitmap.Save(ms, new SixLabors.ImageSharp.Formats.Png.PngEncoder());
                 return ms.ToArray();
             }
-
-            // return bitmap.ToByteArray();
         }
 
         /*
