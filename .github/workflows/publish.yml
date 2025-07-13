@@ -24,7 +24,7 @@ jobs:
 
       - name: Set version in csproj
         run: |
-          for file in *.csproj; do
+          for file in Avatara/*.csproj; do
             sed -i "s|<Major>.*</Major>|<Major>${MAJOR}</Major>|" "$file"
             sed -i "s|<Minor>.*</Minor>|<Minor>${MINOR}</Minor>|" "$file"
             sed -i "s|<Build>.*</Build>|<Build>${PATCH}</Build>|" "$file"

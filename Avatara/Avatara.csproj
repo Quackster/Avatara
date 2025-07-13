@@ -8,14 +8,15 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Major>1</Major>
-    <Minor>1</Minor>
+    <Major>0</Major>
+    <Minor>0</Minor>
     <Build>0</Build>
     <Revision>$([System.DateTime]::UtcNow.ToString("MddHHmm"))</Revision>
 
-    <Version>$(Major).$(Minor).$(Build).$(Revision)</Version>
+    <Version>$(Major).$(Minor).$(Build)</Version>
     <AssemblyVersion>$(Major).$(Minor).$(Build)</AssemblyVersion>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <OutputType>Library</OutputType>
   </PropertyGroup>
 
 
