@@ -1,5 +1,7 @@
 # Avatara
-Habbo Hotel figure avatar imager for 2009 era figure codes.
+Habbo Hotel figure avatar imager for 2009 era figure codes. 
+
+Pre-v18 figure codes are now supported.
 
 ## How to Use
 
@@ -60,3 +62,5 @@ Thanks to ArachisH for the Flazzy project.
 Forked: https://github.com/Quackster/Flazzy
 
 Thanks to Webbanditten for solving some rendering problems.
+
+Thanks to Alcosmos for the old to new figure code converter code.

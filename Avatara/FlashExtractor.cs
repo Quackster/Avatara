@@ -33,8 +33,17 @@ namespace Avatara
             if (!Directory.Exists(@"figuredata/xml"))
                 Directory.CreateDirectory(@"figuredata/xml");
 
+            if (!Directory.Exists(@"figuredata/converter"))
+                Directory.CreateDirectory(@"figuredata/converter");
+
             if (!Directory.Exists(@"figuredata/images"))
                 Directory.CreateDirectory(@"figuredata/images");
+
+            if (!File.Exists("figuredata/converter/oldfiguredata.json"))
+                File.WriteAllText("figuredata/converter/oldfiguredata.json", FigureWriter.OLD_FIGUREDATA);
+
+            if (!File.Exists("figuredata/converter/newfiguredata.json"))
+                File.WriteAllText("figuredata/converter/newfiguredata.json", FigureWriter.NEW_FIGUREDATA);
 
             if (!Directory.GetFiles("figuredata/xml").Any() || 
                 !Directory.GetFiles("figuredata/images").Any())

@@ -1,4 +1,5 @@
-﻿using Avatara.Extensions;
+﻿using Alcosmos.Figure;
+using Avatara.Extensions;
 using Avatara.Figure;
 using Avatara.Util;
 using SixLabors.ImageSharp;
@@ -40,6 +41,12 @@ namespace Avatara
 
         public Avatar(FiguredataReader figuredataReader, string figure, string size, int bodyDirection, int headDirection, string action = "std", string gesture = "std", bool headOnly = false, int frame = 1, int carryDrink = 0, bool cropImage = false)
         {
+            if (figure.All(char.IsDigit))
+            {
+                figure = FigureConverter.ConvertOldToNew(figure);
+                Console.WriteLine("Converting old figure to new: " + figure);
+            }
+
             Figure = figure;
             Size = size.ToLower();
             IsSmall = Size != "b" && Size != "l";
