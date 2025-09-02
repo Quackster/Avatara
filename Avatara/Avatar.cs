@@ -41,7 +41,7 @@ namespace Avatara
         {
             if (figure.All(char.IsDigit))
             {
-                figure = FigureConverter.ConvertOldToNew(figure);
+                figure = new FigureConverter().ConvertOldToNew(figure);
                 Console.WriteLine("Converting old figure to new: " + figure);
             }
 
