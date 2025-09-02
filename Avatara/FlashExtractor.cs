@@ -119,7 +119,7 @@ namespace Avatara
 
                 var name = asset.Attributes.GetNamedItem("name").InnerText;
 
-                if (name.Split("_").Length < 3)
+                if (name.Split('_').Length < 3)
                     continue;
 
                 var offsets = asset.ChildNodes.Item(0)?.Attributes.GetNamedItem("value")?.InnerText;
@@ -133,11 +133,11 @@ namespace Avatara
 
                 if (fileName.StartsWith("hh_ "))
                 {
-                    key = name.Split("_")[2];// + "_" + name.Split("_")[0];
+                    key = name.Split('_')[2];// + "_" + name.Split("_")[0];
                 }
                 else
                 {
-                    key = name.Split("_")[2];// + (fileName.Contains("_50_") ? "_sh" : "_h");
+                    key = name.Split('_')[2];// + (fileName.Contains("_50_") ? "_sh" : "_h");
                 }
 
                 /*
