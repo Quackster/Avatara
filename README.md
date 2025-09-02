@@ -44,12 +44,12 @@ File.WriteAllBytes("figure.png", avatar.Run());
 
 ### Available on NuGet
 
-NuGet link: https://www.nuget.org/packages/Avatara-Imager/1.0.0
+NuGet link: https://www.nuget.org/packages/Avatara-Imager
 
 Package: 
 
 ```
-NuGet\Install-Package Avatara-Imager -Version 1.0.0
+NuGet\Install-Package Avatara-Imager
 ```
 
 ## As a web server?
@@ -59,7 +59,8 @@ See: https://github.com/Quackster/Minerva
 ## Credits
 
 Thanks to ArachisH for the Flazzy project. 
-Forked: https://github.com/Quackster/Flazzy
+
+Forked: https://github.com/Quackster/Flazzy.NET
 
 Thanks to Webbanditten for solving some rendering problems.
 
