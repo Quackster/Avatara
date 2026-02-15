@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using Avatara.Figure;
 using Newtonsoft.Json.Linq;
 
 namespace Alcosmos.Figure
@@ -13,12 +16,9 @@ namespace Alcosmos.Figure
 
         // Default paths; change as needed
         private readonly string _oldFigureDataPath = "figuredata/converter/oldfiguredata.json";
-        private readonly string _newFigureDataPath = "figuredata/converter/newfiguredata.json";
 
         private static JObject _oldFigureData;
-        private static JObject _newFigureData;
         private static readonly object _oldLock = new object();
-        private static readonly object _newLock = new object();
 
         // Private constructor for singleton
         private FigureConverter() { }
@@ -31,7 +31,9 @@ namespace Alcosmos.Figure
             if (string.IsNullOrEmpty(oldFigure) || oldFigure.Length < 22)
                 throw new ArgumentException("Invalid figure string", nameof(oldFigure));
 
-            // Parse figure parts
+            // Parse figure parts: 5 pairs of (3-digit setId, 2-digit colorIndex)
+            // Positions 0-1 are always hr, 2-3 are always hd
+            // Positions 4-5, 6-7, 8-9 are ch/lg/sh but order varies by source
             var partsString = new string[10];
             int start = 0;
             for (int i = 0; i < 10; i++)
@@ -43,17 +45,40 @@ namespace Alcosmos.Figure
 
             var parts = Array.ConvertAll(partsString, int.Parse);
 
+            // Detect correct mapping for positions 4/6/8 by looking up set types
+            int chIdx, lgIdx, shIdx;
+            DetectBodyOrder(parts, out chIdx, out lgIdx, out shIdx);
+
             // Assemble new figure string
             string hrColor = ConvertOldColorToNew("hr", parts[0], parts[1]);
+            int shSetId = parts[shIdx] == 730 ? 3206 : parts[shIdx];
             var result =
                 $"hr-{parts[0]}-{hrColor}" +
                 $".hd-{parts[2]}-{ConvertOldColorToNew("hd", parts[2], parts[3])}" +
-                $".ch-{parts[8]}-{ConvertOldColorToNew("ch", parts[8], parts[9])}" +
-                $".lg-{parts[4]}-{ConvertOldColorToNew("lg", parts[4], parts[5])}" +
-                $".sh-{(parts[6] == 730 ? 3206 : parts[6])}-{ConvertOldColorToNew("sh", parts[6], parts[7])}" +
+                $".ch-{parts[chIdx]}-{ConvertOldColorToNew("ch", parts[chIdx], parts[chIdx + 1])}" +
+                $".lg-{parts[lgIdx]}-{ConvertOldColorToNew("lg", parts[lgIdx], parts[lgIdx + 1])}" +
+                $".sh-{shSetId}-{ConvertOldColorToNew("sh", parts[shIdx], parts[shIdx + 1])}" +
                 TakeCareOfHats(parts[0], int.Parse(hrColor));
 
             return result;
+        }
+
+        private void DetectBodyOrder(int[] parts, out int chIdx, out int lgIdx, out int shIdx)
+        {
+            // Map each position (4, 6, 8) to its actual part type using figuredata.xml
+            var sets = FiguredataReader.Instance.FigureSets;
+            var mapping = new Dictionary<string, int>();
+
+            foreach (int idx in new[] { 4, 6, 8 })
+            {
+                string setId = parts[idx].ToString();
+                if (sets.ContainsKey(setId))
+                    mapping[sets[setId].SetType] = idx;
+            }
+
+            chIdx = mapping.ContainsKey("ch") ? mapping["ch"] : 4;
+            lgIdx = mapping.ContainsKey("lg") ? mapping["lg"] : 6;
+            shIdx = mapping.ContainsKey("sh") ? mapping["sh"] : 8;
         }
 
         private JObject GetOldFigureData()
@@ -70,22 +95,6 @@ namespace Alcosmos.Figure
                 }
             }
             return _oldFigureData;
-        }
-
-        private JObject GetNewFigureData()
-        {
-            if (_newFigureData == null)
-            {
-                lock (_newLock)
-                {
-                    if (_newFigureData == null)
-                    {
-                        string json = File.ReadAllText(_newFigureDataPath);
-                        _newFigureData = JObject.Parse(json);
-                    }
-                }
-            }
-            return _newFigureData;
         }
 
         private string GetOldColorFromFigureList(string part, int sprite, int colorIndex)
@@ -128,50 +137,92 @@ namespace Alcosmos.Figure
             var oldColor = GetOldColorFromFigureList(part, sprite, colorIndex);
             if (oldColor == null) return null;
 
-            var paletteJson = GetNewFigureData();
-            var palette = (JObject)paletteJson["palette"];
+            var reader = FiguredataReader.Instance;
+            if (!reader.FigureSetTypes.ContainsKey(part)) return null;
 
-            foreach (var paletteEntry in palette.Properties())
+            var paletteId = reader.FigureSetTypes[part].PaletteId;
+            if (!reader.FigurePalettes.ContainsKey(paletteId)) return null;
+
+            var match = reader.FigurePalettes[paletteId].FirstOrDefault(c => c.HexColor == oldColor);
+            return match?.ColourId;
+        }
+
+        private string ConvertColorBetweenPalettes(string fromType, string toType, int colorId)
+        {
+            var reader = FiguredataReader.Instance;
+            if (!reader.FigureSetTypes.ContainsKey(fromType) || !reader.FigureSetTypes.ContainsKey(toType))
+                return colorId.ToString();
+
+            var fromPaletteId = reader.FigureSetTypes[fromType].PaletteId;
+            var toPaletteId = reader.FigureSetTypes[toType].PaletteId;
+
+            if (fromPaletteId == toPaletteId)
+                return colorId.ToString();
+
+            if (!reader.FigurePalettes.ContainsKey(fromPaletteId) || !reader.FigurePalettes.ContainsKey(toPaletteId))
+                return colorId.ToString();
+
+            var fromColor = reader.FigurePalettes[fromPaletteId].FirstOrDefault(c => c.ColourId == colorId.ToString());
+            if (fromColor == null)
+                return colorId.ToString();
+
+            // Exact hex match
+            var toColor = reader.FigurePalettes[toPaletteId].FirstOrDefault(c => c.HexColor == fromColor.HexColor);
+            if (toColor != null)
+                return toColor.ColourId;
+
+            // Closest color by RGB distance
+            int fr = Convert.ToInt32(fromColor.HexColor.Substring(0, 2), 16);
+            int fg = Convert.ToInt32(fromColor.HexColor.Substring(2, 2), 16);
+            int fb = Convert.ToInt32(fromColor.HexColor.Substring(4, 2), 16);
+
+            string bestId = null;
+            int bestDist = int.MaxValue;
+            foreach (var c in reader.FigurePalettes[toPaletteId])
             {
-                var pal = paletteEntry.Value as JObject;
-                foreach (var colorEntry in pal.Properties())
+                int cr = Convert.ToInt32(c.HexColor.Substring(0, 2), 16);
+                int cg = Convert.ToInt32(c.HexColor.Substring(2, 2), 16);
+                int cb = Convert.ToInt32(c.HexColor.Substring(4, 2), 16);
+                int dist = (fr - cr) * (fr - cr) + (fg - cg) * (fg - cg) + (fb - cb) * (fb - cb);
+                if (dist < bestDist)
                 {
-                    var colorObj = colorEntry.Value as JObject;
-                    if (colorObj == null) continue;
-                    if (colorObj["color"].ToString() == oldColor)
-                        return colorEntry.Name;
+                    bestDist = dist;
+                    bestId = c.ColourId;
                 }
             }
-            return null;
+
+            return bestId ?? colorId.ToString();
         }
 
         private string TakeCareOfHats(int spriteId, int colorId)
         {
+            string haColor = ConvertColorBetweenPalettes("hr", "ha", colorId);
+
             switch (spriteId)
             {
                 case 120: return ".ha-1001-0";
                 case 525:
-                case 140: return $".ha-1002-{colorId}";
+                case 140: return $".ha-1002-{haColor}";
                 case 150:
-                case 535: return $".ha-1003-{colorId}";
+                case 535: return $".ha-1003-{haColor}";
                 case 160:
-                case 565: return $".ha-1004-{colorId}";
-                case 570: return $".ha-1005-{colorId}";
+                case 565: return $".ha-1004-{haColor}";
+                case 570: return $".ha-1005-{haColor}";
                 case 585:
                 case 175: return ".ha-1006-0";
                 case 580:
                 case 176: return ".ha-1007-0.fa-1202-70";
                 case 590:
-                case 177: return ".ha-1008-0";
+                case 177: return ".ha-1008-0.fa-1202-1294";
                 case 595:
                 case 178: return ".ha-1009-1321";
-                case 130: return $".ha-1010-{colorId}";
-                case 801: return $".hr-829-{colorId}.fa-1201-62.ha-1011-{colorId}";
+                case 130: return $".ha-1010-{haColor}";
+                case 801: return $".hr-829-{colorId}.fa-1201-62.ha-1011-{haColor}";
                 case 800:
-                case 810: return $".ha-1012-{colorId}";
+                case 810: return $".ha-1012-{haColor}";
                 case 802:
-                case 811: return $".ha-1013-{colorId}";
-                default: return $".ha-0-{colorId}";
+                case 811: return $".ha-1013-{haColor}";
+                default: return $".ha-0-{haColor}";
             }
         }
     }
