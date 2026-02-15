@@ -147,18 +147,43 @@ namespace Alcosmos.Figure
             return match?.ColourId;
         }
 
+        private string ConvertHrColorToHaColor(int hrColorId)
+        {
+            var reader = FiguredataReader.Instance;
+            if (!reader.FigureSetTypes.ContainsKey("hr") || !reader.FigureSetTypes.ContainsKey("ha"))
+                return hrColorId.ToString();
+
+            var hrPaletteId = reader.FigureSetTypes["hr"].PaletteId;
+            var haPaletteId = reader.FigureSetTypes["ha"].PaletteId;
+
+            if (hrPaletteId == haPaletteId)
+                return hrColorId.ToString();
+
+            if (!reader.FigurePalettes.ContainsKey(hrPaletteId) || !reader.FigurePalettes.ContainsKey(haPaletteId))
+                return hrColorId.ToString();
+
+            var hrColor = reader.FigurePalettes[hrPaletteId].FirstOrDefault(c => c.ColourId == hrColorId.ToString());
+            if (hrColor == null)
+                return hrColorId.ToString();
+
+            var haColor = reader.FigurePalettes[haPaletteId].FirstOrDefault(c => c.HexColor == hrColor.HexColor);
+            return haColor?.ColourId ?? hrColorId.ToString();
+        }
+
         private string TakeCareOfHats(int spriteId, int colorId)
         {
+            string haColor = ConvertHrColorToHaColor(colorId);
+
             switch (spriteId)
             {
                 case 120: return ".ha-1001-0";
                 case 525:
-                case 140: return $".ha-1002-{colorId}";
+                case 140: return $".ha-1002-{haColor}";
                 case 150:
-                case 535: return $".ha-1003-{colorId}";
+                case 535: return $".ha-1003-{haColor}";
                 case 160:
-                case 565: return $".ha-1004-{colorId}";
-                case 570: return $".ha-1005-{colorId}";
+                case 565: return $".ha-1004-{haColor}";
+                case 570: return $".ha-1005-{haColor}";
                 case 585:
                 case 175: return ".ha-1006-0";
                 case 580:
@@ -167,13 +192,13 @@ namespace Alcosmos.Figure
                 case 177: return ".ha-1008-0.fa-1202-1294";
                 case 595:
                 case 178: return ".ha-1009-1321";
-                case 130: return $".ha-1010-{colorId}";
-                case 801: return $".hr-829-{colorId}.fa-1201-62.ha-1011-{colorId}";
+                case 130: return $".ha-1010-{haColor}";
+                case 801: return $".hr-829-{colorId}.fa-1201-62.ha-1011-{haColor}";
                 case 800:
-                case 810: return $".ha-1012-{colorId}";
+                case 810: return $".ha-1012-{haColor}";
                 case 802:
-                case 811: return $".ha-1013-{colorId}";
-                default: return $".ha-0-{colorId}";
+                case 811: return $".ha-1013-{haColor}";
+                default: return $".ha-0-{haColor}";
             }
         }
     }
