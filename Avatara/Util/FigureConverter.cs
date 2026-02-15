@@ -147,32 +147,56 @@ namespace Alcosmos.Figure
             return match?.ColourId;
         }
 
-        private string ConvertHrColorToHaColor(int hrColorId)
+        private string ConvertColorBetweenPalettes(string fromType, string toType, int colorId)
         {
             var reader = FiguredataReader.Instance;
-            if (!reader.FigureSetTypes.ContainsKey("hr") || !reader.FigureSetTypes.ContainsKey("ha"))
-                return hrColorId.ToString();
+            if (!reader.FigureSetTypes.ContainsKey(fromType) || !reader.FigureSetTypes.ContainsKey(toType))
+                return colorId.ToString();
 
-            var hrPaletteId = reader.FigureSetTypes["hr"].PaletteId;
-            var haPaletteId = reader.FigureSetTypes["ha"].PaletteId;
+            var fromPaletteId = reader.FigureSetTypes[fromType].PaletteId;
+            var toPaletteId = reader.FigureSetTypes[toType].PaletteId;
 
-            if (hrPaletteId == haPaletteId)
-                return hrColorId.ToString();
+            if (fromPaletteId == toPaletteId)
+                return colorId.ToString();
 
-            if (!reader.FigurePalettes.ContainsKey(hrPaletteId) || !reader.FigurePalettes.ContainsKey(haPaletteId))
-                return hrColorId.ToString();
+            if (!reader.FigurePalettes.ContainsKey(fromPaletteId) || !reader.FigurePalettes.ContainsKey(toPaletteId))
+                return colorId.ToString();
 
-            var hrColor = reader.FigurePalettes[hrPaletteId].FirstOrDefault(c => c.ColourId == hrColorId.ToString());
-            if (hrColor == null)
-                return hrColorId.ToString();
+            var fromColor = reader.FigurePalettes[fromPaletteId].FirstOrDefault(c => c.ColourId == colorId.ToString());
+            if (fromColor == null)
+                return colorId.ToString();
 
-            var haColor = reader.FigurePalettes[haPaletteId].FirstOrDefault(c => c.HexColor == hrColor.HexColor);
-            return haColor?.ColourId ?? hrColorId.ToString();
+            // Exact hex match
+            var toColor = reader.FigurePalettes[toPaletteId].FirstOrDefault(c => c.HexColor == fromColor.HexColor);
+            if (toColor != null)
+                return toColor.ColourId;
+
+            // Closest color by RGB distance
+            int fr = Convert.ToInt32(fromColor.HexColor.Substring(0, 2), 16);
+            int fg = Convert.ToInt32(fromColor.HexColor.Substring(2, 2), 16);
+            int fb = Convert.ToInt32(fromColor.HexColor.Substring(4, 2), 16);
+
+            string bestId = null;
+            int bestDist = int.MaxValue;
+            foreach (var c in reader.FigurePalettes[toPaletteId])
+            {
+                int cr = Convert.ToInt32(c.HexColor.Substring(0, 2), 16);
+                int cg = Convert.ToInt32(c.HexColor.Substring(2, 2), 16);
+                int cb = Convert.ToInt32(c.HexColor.Substring(4, 2), 16);
+                int dist = (fr - cr) * (fr - cr) + (fg - cg) * (fg - cg) + (fb - cb) * (fb - cb);
+                if (dist < bestDist)
+                {
+                    bestDist = dist;
+                    bestId = c.ColourId;
+                }
+            }
+
+            return bestId ?? colorId.ToString();
         }
 
         private string TakeCareOfHats(int spriteId, int colorId)
         {
-            string haColor = ConvertHrColorToHaColor(colorId);
+            string haColor = ConvertColorBetweenPalettes("hr", "ha", colorId);
 
             switch (spriteId)
             {
